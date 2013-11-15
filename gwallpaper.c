@@ -20,7 +20,6 @@
 /* TODO:
  * create/use existing cache for thumbs
  * graphical preferences to go with config?
- * store currently applied settings in a file
  */
  
 #include <stdlib.h>
@@ -197,7 +196,7 @@ static int set_background (void) {
 	XGrabServer (dpy);
 	XChangeProperty (dpy, root, prop_root, XA_PIXMAP, 32, PropModeReplace,
 			(unsigned char *)&xpixmap, 1);
-    XChangeProperty (dpy, root, prop_esetroot, XA_PIXMAP, 32, PropModeReplace,
+	XChangeProperty (dpy, root, prop_esetroot, XA_PIXMAP, 32, PropModeReplace,
 			(unsigned char *)&xpixmap, 1);
 			
 	XSetWindowBackgroundPixmap (dpy, root, xpixmap);
@@ -232,7 +231,7 @@ static GSList *load_wallpapers_in_dir (const char *wp_dir, GSList *wallpapers) {
 
 static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> threads?
 	GSList *wallpapers = NULL;
-	/*GtkTreeIter sel_it = {0};*/
+	GtkTreeIter sel_it = {0};
 
 	/* load user dir */ //FIXME: multiple directories
 	wallpapers = load_wallpapers_in_dir (dir, wallpapers);
@@ -270,40 +269,43 @@ static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> th
 			gtk_list_store_insert_with_values (store, &it, -1, 0, wp, 1, name, -1);
 			g_object_unref (wp);
 		}
-		//FIXME: do this later
 		/* if this wallpaper is the one currently in use */
-		/*if(!sel_it.user_data) {
-			if(strncmp(name, set_wp, sizeof(name)) == 0)
+		if (!sel_it.user_data) {
+			if (strcmp (name, set_wp) == 0)
 				sel_it = it;
-		}*/
+		}
 		g_free (name);
 	}
 	g_slist_free (wallpapers);
 
-	//FIXME: do this later
-	/*if (sel_it.user_data) {
-		GtkTreePath *tp;
+	if (sel_it.user_data) {
+		GtkTreeModel *model;
+		GtkTreePath *path;
 
-		//tp = gtk_tree_model_get_path (GTK_TREE_MODEL (store), &sel_it);
-		gtk_icon_view_select_path (GTK_ICON_VIEW (icon_view), tp);
-		gtk_icon_view_scroll_to_path (GTK_ICON_VIEW (icon_view), tp, FALSE, 0, 0);
-		gtk_tree_path_free (tp);
-	}*/
+		model = gtk_icon_view_get_model (GTK_ICON_VIEW (icon_view));
+		path = gtk_tree_model_get_path (model, &sel_it);
+		gtk_icon_view_select_path (GTK_ICON_VIEW (icon_view), path);
+		gtk_icon_view_scroll_to_path (GTK_ICON_VIEW (icon_view), path, FALSE, 0, 0);
+		gtk_tree_path_free (path);
+	}
 }
 
 static void on_apply_button_clicked (GtkButton *button, gpointer user_data) {
-	GList *active;
-	GtkTreePath *path;
 	GtkTreeIter iter;
+	GtkTreePath *path;
+	GtkTreeModel *model;
 
 	config_changed = 1;
-	active = gtk_icon_view_get_selected_items (GTK_ICON_VIEW (icon_view));
-	path = (GtkTreePath *)active->data;
-	gtk_tree_model_get_iter (GTK_TREE_MODEL (icon_view), &iter, path);
-	gtk_tree_model_get (GTK_TREE_MODEL (icon_view), &iter, 1, &set_wp, -1);
-	set_background ();
+	model = gtk_icon_view_get_model (GTK_ICON_VIEW (icon_view));
+	path = gtk_tree_model_get_path (model, &iter);
+	if (!gtk_tree_model_get_iter (model, &iter, path)) {
+		g_fprintf (stderr, "Error: can not get determine activated wallpaper.\n");
+		return;
+	}
+	gtk_tree_path_free (path);
+	gtk_tree_model_get (model, &iter, 1, &set_wp, -1);
 
-	g_list_free_full (active, (GDestroyNotify) gtk_tree_path_free);
+	set_background ();
 }
 
 static void on_combo_changed (GtkComboBox *combo, gpointer user_data) {
@@ -318,11 +320,16 @@ static void on_selection_changed (GtkIconView *view, gpointer user_data) {
 }
 
 static void on_item_activated (GtkIconView *view, GtkTreePath *path, gpointer user_data) {
+	GtkTreeModel *model;
 	GtkTreeIter iter;
 
 	config_changed = 1;
-	gtk_tree_model_get_iter (GTK_TREE_MODEL (icon_view), &iter, path);
-	gtk_tree_model_get (GTK_TREE_MODEL (icon_view), &iter, 1, &set_wp, -1);
+	model = gtk_icon_view_get_model (GTK_ICON_VIEW (icon_view));
+	if (!gtk_tree_model_get_iter (model, &iter, path)) {
+		g_fprintf (stderr, "Error: can not get determine activated wallpaper.\n");
+		return;
+	}
+	gtk_tree_model_get (model, &iter, 1, &set_wp, -1);
 
 	set_background ();
 }
