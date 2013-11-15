@@ -20,6 +20,9 @@
 /* TODO:
  * create/use existing cache for thumbs
  * graphical preferences to go with config?
+ * have a --restore option
+ * polish UI with images a là Nitrogen
+ * support multi-monitors / Xinerama
  */
  
 #include <stdlib.h>
@@ -32,10 +35,12 @@
 #include <X11/Xatom.h>
 #include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
 
+#define VERSION_STRING "0.1"
+
 enum {
   WP_COLOR = 0,
   WP_TILE,
-  WP_STRETCH,
+  WP_SCALED,
   WP_FIT,
   WP_CENTER
 };
@@ -67,6 +72,10 @@ static int set_background (void) {
 	XGCValues gcv;
 	XColor xcolor;
 	Atom prop_root = None, prop_esetroot = None;
+
+#ifdef DEBUG
+	g_fprintf (stdout, "set_wp: %s\n", set_wp);
+#endif
 
 	GError *err = NULL;
 	GdkPixbuf *pix = gdk_pixbuf_new_from_file (set_wp, &err);
@@ -110,9 +119,9 @@ static int set_background (void) {
 			g_fprintf (stdout, "wp_mode: tile\n\n");
 #endif
 			break;
-		case WP_STRETCH:
+		case WP_SCALED:
 #ifdef DEBUG
-			g_fprintf (stdout, "wp_mode: stretch\n\n");
+			g_fprintf (stdout, "wp_mode: scaled\n\n");
 #endif
 			if (dest_w == src_w && dest_h == src_h)
 				scaled = (GdkPixbuf *)g_object_ref (pix);
@@ -139,7 +148,7 @@ static int set_background (void) {
 				}
 			}
 			/* continue to execute code in case WP_CENTER */
-			case WP_CENTER:
+		case WP_CENTER:
 #ifdef DEBUG
 			g_fprintf (stdout, "wp_mode: center\n\n");
 #endif
@@ -164,7 +173,7 @@ static int set_background (void) {
 		gcv.foreground = gcv.background = BlackPixel (dpy, screen_num);
 	g_free ((gpointer) bg_color_string);
 	gc = XCreateGC (dpy, xpixmap, (GCForeground | GCBackground), &gcv);
-	XFillRectangle (dpy, xpixmap, gc, x, y, dest_w, dest_h);
+	XFillRectangle (dpy, xpixmap, gc, x, y, src_w, src_h);
 
 	Atom type;
 	int format;
@@ -483,7 +492,7 @@ static GtkWidget *create_window (GtkListStore *store) {
 	wp_modes = gtk_list_store_new (1, G_TYPE_STRING);
 	gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, _("Color"), -1);
 	gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, _("Tiled"), -1);
-	gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, _("Stretched"), -1);
+	gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, _("Scaled"), -1);
 	gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, _("Fit"), -1);
 	gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, _("Centered"), -1);
 	combo_mode = gtk_combo_box_new_with_model (GTK_TREE_MODEL (wp_modes));
@@ -511,7 +520,52 @@ static GtkWidget *create_window (GtkListStore *store) {
 	return window;
 }
 
-int main (void) {
+static int get_options (int argc, char **argv) {
+	GOptionContext *option_context;
+	GError *err = NULL;
+	gboolean restore_background = FALSE;
+	gboolean display_version = FALSE;
+
+	GOptionEntry option_entries[] = {
+		{ "version",  'v', 0, G_OPTION_ARG_NONE, &display_version, "Display version and exit",
+				NULL },
+		{ "restore",  'r', 0, G_OPTION_ARG_NONE, &restore_background, "Use symbolic icons", NULL },
+		{ NULL },
+	};
+
+	option_context = g_option_context_new (NULL);
+	g_option_context_add_main_entries (option_context, option_entries, NULL);
+	g_option_context_add_group (option_context, gtk_get_option_group (TRUE));
+
+	if (g_option_context_parse (option_context, &argc, &argv, &err) == FALSE) {
+		g_fprintf (stderr, "Error: can not parse command line arguments: %s\n", err->message);
+		g_clear_error (&err);
+		return -1;
+	}
+	g_option_context_free (option_context);
+
+	if (display_version == TRUE) {
+		g_fprintf (stdout, "Gwallpaper: a simple and lightweight background setter. Version %s.\n",
+				VERSION_STRING);
+		return 1;
+	}
+
+	if (restore_background == TRUE) {
+		const char *config_dir;
+		const char *config_file;
+
+		config_dir = g_get_user_config_dir ();
+		config_file = g_build_filename (config_dir, "gwallpaper/config.cfg", NULL);
+		load_config (config_file);
+		set_background ();
+		return 1;
+	}
+
+	return 0;
+}
+
+int main (int argc, char **argv) {
+	int option = 0;
 	GtkWidget *window;
 	GtkListStore *wp_store;
 	const char *config_dir;
@@ -523,11 +577,14 @@ int main (void) {
 	textdomain (GETTEXT_PACKAGE);
 #endif
 
+	if ((option = get_options (argc, argv) != 0))
+		return option;
+
 	config_dir = g_get_user_config_dir ();
 	config_file = g_build_filename (config_dir, "gwallpaper/config.cfg", NULL);
 	load_config (config_file);
 
-	gtk_init (NULL, NULL);
+	gtk_init (&argc, &argv);
 
 	wp_store = gtk_list_store_new (2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
 	
