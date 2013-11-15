@@ -15,7 +15,8 @@ There are two dependencies required to compile and run Gwallpaper: gdk-pixbuf2 a
 Once those dependencies are installed, just run these commands to build and install Gwallpaper:
 
     $ make
-    # make clean install
+    # make install
+    (Optionally) $ make clean
 
 Bugs
 ----
