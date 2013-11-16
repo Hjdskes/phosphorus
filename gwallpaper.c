@@ -311,7 +311,7 @@ static void on_apply_button_clicked (GtkButton *button, gpointer user_data) {
 	model = gtk_icon_view_get_model (GTK_ICON_VIEW (icon_view));
 	path = gtk_tree_model_get_path (model, &iter);
 	if (!gtk_tree_model_get_iter (model, &iter, path)) {
-		g_fprintf (stderr, "Error: can not get determine activated wallpaper.\n");
+		g_fprintf (stderr, "Error: can not determine activated wallpaper (from apply button).\n");
 		return;
 	}
 	gtk_tree_path_free (path);
@@ -338,7 +338,7 @@ static void on_item_activated (GtkIconView *view, GtkTreePath *path, gpointer us
 	config_changed = 1;
 	model = gtk_icon_view_get_model (GTK_ICON_VIEW (icon_view));
 	if (!gtk_tree_model_get_iter (model, &iter, path)) {
-		g_fprintf (stderr, "Error: can not get determine activated wallpaper.\n");
+		g_fprintf (stderr, "Error: can not determine activated wallpaper (from item activated).\n");
 		return;
 	}
 	gtk_tree_model_get (model, &iter, 1, &set_wp, -1);
