@@ -23,8 +23,9 @@
  * have a --restore option
  * polish UI with images a là Nitrogen
  * support multi-monitors / Xinerama
+ * support more cmdline parameters a là Nitrogen
  */
- 
+
 #include <stdlib.h>
 #include <string.h>
 #include <gtk/gtk.h>
@@ -112,7 +113,7 @@ static int set_background (void) {
 	GdkPixbuf *scaled;
 	switch (wp_mode) {
 		case WP_COLOR:
-			g_fprintf (stdout, "Error: not implemented yet.\n");
+			g_fprintf (stderr, "Error: not implemented yet.\n");
 			return 0;
 		case WP_TILE:
 #ifdef DEBUG
@@ -172,8 +173,9 @@ static int set_background (void) {
 	else
 		gcv.foreground = gcv.background = BlackPixel (dpy, screen_num);
 	g_free ((gpointer) bg_color_string);
+
 	gc = XCreateGC (dpy, xpixmap, (GCForeground | GCBackground), &gcv);
-	XFillRectangle (dpy, xpixmap, gc, x, y, src_w, src_h);
+	XFillRectangle (dpy, xpixmap, gc, x, y, dest_w, dest_h);
 
 	Atom type;
 	int format;
@@ -207,7 +209,7 @@ static int set_background (void) {
 			(unsigned char *)&xpixmap, 1);
 	XChangeProperty (dpy, root, prop_esetroot, XA_PIXMAP, 32, PropModeReplace,
 			(unsigned char *)&xpixmap, 1);
-			
+
 	XSetWindowBackgroundPixmap (dpy, root, xpixmap);
 	XClearWindow (dpy, root);
 
@@ -278,7 +280,7 @@ static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> th
 			gtk_list_store_insert_with_values (store, &it, -1, 0, wp, 1, name, -1);
 			g_object_unref (wp);
 		}
-		/* if this wallpaper is the one currently in use */
+		/* if this wallpaper is the one currently in use ... */
 		if (!sel_it.user_data) {
 			if (strcmp (name, set_wp) == 0)
 				sel_it = it;
@@ -287,6 +289,7 @@ static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> th
 	}
 	g_slist_free (wallpapers);
 
+	/* ... then select that wallpaper */
 	if (sel_it.user_data) {
 		GtkTreeModel *model;
 		GtkTreePath *path;
@@ -380,7 +383,7 @@ int load_config (const char *path) {
 		set_wp = g_key_file_get_string (config, "Wallpaper", "set_wp", &errr);
 		wp_mode = g_key_file_get_integer (config, "Wallpaper", "wp_mode", &errr);
 		color = g_key_file_get_string (config, "Wallpaper", "color", &errr);
-		
+
 		g_key_file_free (config);
 		if (errr) {
 			g_fprintf (stderr, "Error: %s.\n", errr->message);
@@ -513,7 +516,7 @@ static GtkWidget *create_window (GtkListStore *store) {
 	gtk_box_pack_start (GTK_BOX (box_buttons), button_about, FALSE, FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (box_buttons), combo_mode, FALSE, FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (box_buttons), button_color, FALSE, FALSE, 0);
-	gtk_box_pack_end (GTK_BOX (box_buttons), button_apply, FALSE, FALSE, 0);	
+	gtk_box_pack_end (GTK_BOX (box_buttons), button_apply, FALSE, FALSE, 0);
 	gtk_box_pack_end (GTK_BOX (box_buttons), button_exit, FALSE, FALSE, 0);
 	gtk_container_add (GTK_CONTAINER (box_all), box_buttons);
 
@@ -557,6 +560,7 @@ static int get_options (int argc, char **argv) {
 		config_dir = g_get_user_config_dir ();
 		config_file = g_build_filename (config_dir, "gwallpaper/config.cfg", NULL);
 		load_config (config_file);
+		g_free ((gpointer) config_file);
 		set_background ();
 		return 1;
 	}
@@ -578,7 +582,7 @@ int main (int argc, char **argv) {
 #endif
 
 	if ((option = get_options (argc, argv) != 0))
-		return option;
+		return option < 0 ? -1 : 0;
 
 	config_dir = g_get_user_config_dir ();
 	config_file = g_build_filename (config_dir, "gwallpaper/config.cfg", NULL);
@@ -587,7 +591,7 @@ int main (int argc, char **argv) {
 	gtk_init (&argc, &argv);
 
 	wp_store = gtk_list_store_new (2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
-	
+
 	window = create_window (wp_store);
 	load_wallpapers (wp_store);
 	gtk_widget_show_all (window);
