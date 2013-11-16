@@ -10,7 +10,9 @@ production system yet (as far as setting a background there is important, but yo
 Installation
 ------------
 
-There are two dependencies required to compile and run Gwallpaper: gdk-pixbuf2 and, of course, GTK3.
+There are two dependencies required to compile and run Gwallpaper: GdkPixbuf and, of course, GTK3.
+On Debian, these are `libgdk-pixbuf2.0-dev` and `libgtk-3-dev`.
+On Arch Linux, these are `gdk-pixbuf2` and `gtk3`.
 
 Once those dependencies are installed, just run these commands to build and install Gwallpaper:
 
