@@ -46,6 +46,10 @@ enum {
   WP_CENTER
 };
 
+Display *dpy;
+Window root;
+int screen_num;
+
 const char *set_wp = NULL;
 const char *dir = NULL;
 unsigned int wp_mode = 0;
@@ -65,9 +69,6 @@ gchar *hex_value (GdkRGBA *color) {
 }
 
 static int set_background (void) {
-	Display *dpy;
-	Window root;
-	int screen_num;
 	Pixmap xpixmap;
 	GC gc;
 	XGCValues gcv;
@@ -85,13 +86,6 @@ static int set_background (void) {
 		g_clear_error (&err);
 		return -1;
 	}
-
-	if (!(dpy = XOpenDisplay (NULL))) {
-		g_fprintf (stderr, "Error: can not open X display to set wallpaper.\n");
-		return -1;
-	}
-	screen_num = DefaultScreen (dpy);
-	root = RootWindow (dpy, screen_num);
 
 	int x = 0, y = 0;
 	int src_w = gdk_pixbuf_get_width (pix);
@@ -163,9 +157,6 @@ static int set_background (void) {
 			src_w, src_h, dest_w, dest_h);
 #endif
 
-	gdk_pixbuf_xlib_init (dpy, screen_num);
-	gdk_pixbuf_xlib_render_pixmap_and_mask (pix, &xpixmap, NULL, 1);
-
 	char *bg_color_string = hex_value (&bg_color);
 	if (bg_color_string && XParseColor (dpy, DefaultColormap (dpy, screen_num), bg_color_string,
 			&xcolor) && XAllocColor (dpy, DefaultColormap (dpy, screen_num), &xcolor))
@@ -176,6 +167,8 @@ static int set_background (void) {
 
 	gc = XCreateGC (dpy, xpixmap, (GCForeground | GCBackground), &gcv);
 	XFillRectangle (dpy, xpixmap, gc, x, y, dest_w, dest_h);
+
+	gdk_pixbuf_xlib_render_pixmap_and_mask (pix, &xpixmap, NULL, 1);
 
 	Atom type;
 	int format;
@@ -216,6 +209,7 @@ static int set_background (void) {
 	XUngrabServer (dpy);
 	XFlush (dpy);
 	XFreePixmap (dpy, xpixmap);
+	XFreeGC (dpy, gc);
 	if (pix)
 		g_object_unref (pix);
 
@@ -530,8 +524,7 @@ static int get_options (int argc, char **argv) {
 	gboolean display_version = FALSE;
 
 	GOptionEntry option_entries[] = {
-		{ "version",  'v', 0, G_OPTION_ARG_NONE, &display_version, "Display version and exit",
-				NULL },
+		{ "version",  'v', 0, G_OPTION_ARG_NONE, &display_version, "Display version and exit", NULL },
 		{ "restore",  'r', 0, G_OPTION_ARG_NONE, &restore_background, "Use symbolic icons", NULL },
 		{ NULL },
 	};
@@ -581,6 +574,14 @@ int main (int argc, char **argv) {
 	textdomain (GETTEXT_PACKAGE);
 #endif
 
+	if (!(dpy = XOpenDisplay (NULL))) {
+		g_fprintf (stderr, "Error: can not open X display to set wallpaper.\n");
+		return -1;
+	}
+	screen_num = DefaultScreen (dpy);
+	root = RootWindow (dpy, screen_num);
+	gdk_pixbuf_xlib_init (dpy, screen_num);
+
 	if ((option = get_options (argc, argv) != 0))
 		return option < 0 ? -1 : 0;
 
@@ -601,5 +602,6 @@ int main (int argc, char **argv) {
 		save_config (config_file);
 
 	g_free ((gpointer) config_file);
+	XCloseDisplay (dpy);
 	return 0;
 }
