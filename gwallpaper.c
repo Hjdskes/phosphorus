@@ -46,15 +46,26 @@ enum {
   WP_CENTER
 };
 
-Display *dpy;
-Window root;
-int screen_num;
+struct xconnection {
+	Display *dpy;
+	Window   root;
+	int      screen_num;
+} xcon;
 
-const char *set_wp = NULL;
-const char *dir = NULL;
-unsigned int wp_mode = 0;
-unsigned int config_changed = 0;
-GdkRGBA bg_color = { .0, .0, .0, 1.0 };
+struct config {
+	const char  *set_wp;
+	const char  *dir;
+	unsigned int wp_mode;
+	unsigned int config_changed;
+	GdkRGBA      bg_color;
+} cfg = {
+	NULL,
+	NULL,
+	0,
+	0,
+	{ .0, .0, .0, 1.0 }
+};
+
 GtkWidget *icon_view;
 
 gchar *hex_value (GdkRGBA *color) {
@@ -62,7 +73,7 @@ gchar *hex_value (GdkRGBA *color) {
 	int green = color->green * 255;
 	int blue = color->blue * 255;
 #ifdef DEBUG
-	g_fprintf (stdout, "color to string: %s\n", gdk_rgba_to_string (&bg_color));
+	g_fprintf (stdout, "color to string: %s\n", gdk_rgba_to_string (&cfg.bg_color));
 	g_fprintf (stdout, "color: #%.2X%.2X%.2X\n", red, green, blue);
 #endif
 	return g_strdup_printf ("#%.2X%.2X%.2X", red, green, blue);
@@ -76,11 +87,11 @@ static int set_background (void) {
 	Atom prop_root = None, prop_esetroot = None;
 
 #ifdef DEBUG
-	g_fprintf (stdout, "set_wp: %s\n", set_wp);
+	g_fprintf (stdout, "set_wp: %s\n", cfg.set_wp);
 #endif
 
 	GError *err = NULL;
-	GdkPixbuf *pix = gdk_pixbuf_new_from_file (set_wp, &err);
+	GdkPixbuf *pix = gdk_pixbuf_new_from_file (cfg.set_wp, &err);
 	if (err) {
 		g_fprintf (stderr, "Error: %s\n", err->message);
 		g_clear_error (&err);
@@ -91,12 +102,12 @@ static int set_background (void) {
 	int src_w = gdk_pixbuf_get_width (pix);
 	int src_h = gdk_pixbuf_get_height (pix);
 	int dest_w = 0, dest_h = 0;
-	if (wp_mode == WP_TILE) {
+	if (cfg.wp_mode == WP_TILE) {
 		dest_w = src_w;
 		dest_h = src_h;
 	} else {
-		dest_w = DisplayWidth (dpy, screen_num);
-		dest_h = DisplayHeight (dpy, screen_num);
+		dest_w = DisplayWidth (xcon.dpy, xcon.screen_num);
+		dest_h = DisplayHeight (xcon.dpy, xcon.screen_num);
 	}
 
 #ifdef DEBUG
@@ -105,7 +116,7 @@ static int set_background (void) {
 #endif
 
 	GdkPixbuf *scaled;
-	switch (wp_mode) {
+	switch (cfg.wp_mode) {
 		case WP_COLOR:
 			g_fprintf (stderr, "Error: not implemented yet.\n");
 			return 0;
@@ -157,16 +168,16 @@ static int set_background (void) {
 			src_w, src_h, dest_w, dest_h);
 #endif
 
-	char *bg_color_string = hex_value (&bg_color);
-	if (bg_color_string && XParseColor (dpy, DefaultColormap (dpy, screen_num), bg_color_string,
-			&xcolor) && XAllocColor (dpy, DefaultColormap (dpy, screen_num), &xcolor))
+	char *bg_color_string = hex_value (&cfg.bg_color);
+	if (bg_color_string && XParseColor (xcon.dpy, DefaultColormap (xcon.dpy, xcon.screen_num), bg_color_string,
+			&xcolor) && XAllocColor (xcon.dpy, DefaultColormap (xcon.dpy, xcon.screen_num), &xcolor))
 		gcv.foreground = gcv.background = xcolor.pixel;
 	else
-		gcv.foreground = gcv.background = BlackPixel (dpy, screen_num);
+		gcv.foreground = gcv.background = BlackPixel (xcon.dpy, xcon.screen_num);
 	g_free ((gpointer) bg_color_string);
 
-	gc = XCreateGC (dpy, xpixmap, (GCForeground | GCBackground), &gcv);
-	XFillRectangle (dpy, xpixmap, gc, x, y, dest_w, dest_h);
+	gc = XCreateGC (xcon.dpy, xpixmap, (GCForeground | GCBackground), &gcv);
+	XFillRectangle (xcon.dpy, xpixmap, gc, x, y, dest_w, dest_h);
 
 	gdk_pixbuf_xlib_render_pixmap_and_mask (pix, &xpixmap, NULL, 1);
 
@@ -175,41 +186,41 @@ static int set_background (void) {
 	unsigned long length, after;
 	unsigned char *data_root, *data_esetroot;
 
-	prop_root = XInternAtom (dpy, "_XROOTPMAP_ID", True);
-	prop_esetroot = XInternAtom (dpy, "ESETROOT_PMAP_ID", True);
+	prop_root = XInternAtom (xcon.dpy, "_XROOTPMAP_ID", True);
+	prop_esetroot = XInternAtom (xcon.dpy, "ESETROOT_PMAP_ID", True);
 
 	if (prop_root != None && prop_esetroot != None) {
-		XGetWindowProperty (dpy, root, prop_root, 0L, 1L, False, AnyPropertyType, &type, &format,
+		XGetWindowProperty (xcon.dpy, xcon.root, prop_root, 0L, 1L, False, AnyPropertyType, &type, &format,
 				&length, &after, &data_root);
 		if (type == XA_PIXMAP) {
-			XGetWindowProperty (dpy, root, prop_esetroot, 0L, 1L, False, AnyPropertyType, &type,
+			XGetWindowProperty (xcon.dpy, xcon.root, prop_esetroot, 0L, 1L, False, AnyPropertyType, &type,
 					&format, &length, &after, &data_esetroot);
 			if (data_root && data_esetroot)
 				if (type == XA_PIXMAP && *((Pixmap *) data_root) == *((Pixmap *) data_esetroot))
-					XKillClient (dpy, *((Pixmap *) data_root));
+					XKillClient (xcon.dpy, *((Pixmap *) data_root));
 		}
 	}
 
-	prop_root = XInternAtom (dpy, "_XROOTPMAP_ID", False);
-	prop_esetroot = XInternAtom (dpy, "ESETROOT_PMAP_ID", False);
+	prop_root = XInternAtom (xcon.dpy, "_XROOTPMAP_ID", False);
+	prop_esetroot = XInternAtom (xcon.dpy, "ESETROOT_PMAP_ID", False);
 	if (prop_root == None || prop_esetroot == None) {
 		g_fprintf (stderr, "Error:  creation of pixmap property failed.\n");
 		return -1;
 	}
 
-	XGrabServer (dpy);
-	XChangeProperty (dpy, root, prop_root, XA_PIXMAP, 32, PropModeReplace,
+	XGrabServer (xcon.dpy);
+	XChangeProperty (xcon.dpy, xcon.root, prop_root, XA_PIXMAP, 32, PropModeReplace,
 			(unsigned char *)&xpixmap, 1);
-	XChangeProperty (dpy, root, prop_esetroot, XA_PIXMAP, 32, PropModeReplace,
+	XChangeProperty (xcon.dpy, xcon.root, prop_esetroot, XA_PIXMAP, 32, PropModeReplace,
 			(unsigned char *)&xpixmap, 1);
 
-	XSetWindowBackgroundPixmap (dpy, root, xpixmap);
-	XClearWindow (dpy, root);
+	XSetWindowBackgroundPixmap (xcon.dpy, xcon.root, xpixmap);
+	XClearWindow (xcon.dpy, xcon.root);
 
-	XUngrabServer (dpy);
-	XFlush (dpy);
-	XFreePixmap (dpy, xpixmap);
-	XFreeGC (dpy, gc);
+	XUngrabServer (xcon.dpy);
+	XFlush (xcon.dpy);
+	XFreePixmap (xcon.dpy, xpixmap);
+	XFreeGC (xcon.dpy, gc);
 	if (pix)
 		g_object_unref (pix);
 
@@ -239,7 +250,7 @@ static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> th
 	GtkTreeIter sel_it = {0};
 
 	/* load user dir */ //FIXME: multiple directories
-	wallpapers = load_wallpapers_in_dir (dir, wallpapers);
+	wallpapers = load_wallpapers_in_dir (cfg.dir, wallpapers);
 
 	wallpapers = g_slist_sort (wallpapers, (GCompareFunc) strcmp);
 	for (GSList *l = wallpapers; l; l = l->next) {
@@ -276,7 +287,7 @@ static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> th
 		}
 		/* if this wallpaper is the one currently in use ... */
 		if (!sel_it.user_data) {
-			if (strcmp (name, set_wp) == 0)
+			if (strcmp (name, cfg.set_wp) == 0)
 				sel_it = it;
 		}
 		g_free (name);
@@ -301,7 +312,7 @@ static void on_apply_button_clicked (GtkButton *button, gpointer user_data) {
 	GtkTreePath *path;
 	GtkTreeModel *model;
 
-	config_changed = 1;
+	cfg.config_changed = 1;
 	model = gtk_icon_view_get_model (GTK_ICON_VIEW (icon_view));
 	path = gtk_tree_model_get_path (model, &iter);
 	if (!gtk_tree_model_get_iter (model, &iter, path)) {
@@ -309,14 +320,14 @@ static void on_apply_button_clicked (GtkButton *button, gpointer user_data) {
 		return;
 	}
 	gtk_tree_path_free (path);
-	gtk_tree_model_get (model, &iter, 1, &set_wp, -1);
+	gtk_tree_model_get (model, &iter, 1, &cfg.set_wp, -1);
 
 	set_background ();
 }
 
 static void on_combo_changed (GtkComboBox *combo, gpointer user_data) {
-	config_changed = 1;
-	wp_mode = gtk_combo_box_get_active (combo);
+	cfg.config_changed = 1;
+	cfg.wp_mode = gtk_combo_box_get_active (combo);
 }
 
 static void on_selection_changed (GtkIconView *view, gpointer user_data) {
@@ -329,29 +340,29 @@ static void on_item_activated (GtkIconView *view, GtkTreePath *path, gpointer us
 	GtkTreeModel *model;
 	GtkTreeIter iter;
 
-	config_changed = 1;
+	cfg.config_changed = 1;
 	model = gtk_icon_view_get_model (GTK_ICON_VIEW (icon_view));
 	if (!gtk_tree_model_get_iter (model, &iter, path)) {
 		g_fprintf (stderr, "Error: can not determine activated wallpaper (from item activated).\n");
 		return;
 	}
-	gtk_tree_model_get (model, &iter, 1, &set_wp, -1);
+	gtk_tree_model_get (model, &iter, 1, &cfg.set_wp, -1);
 
 	set_background ();
 }
 
 static void on_color_button_clicked (GtkColorButton *button, gpointer user_data) {
-	config_changed = 1;
-	gtk_color_chooser_get_rgba (GTK_COLOR_CHOOSER (button), &bg_color);
+	cfg.config_changed = 1;
+	gtk_color_chooser_get_rgba (GTK_COLOR_CHOOSER (button), &cfg.bg_color);
 }
 
 int save_config (const char *path) {
 	GString *content;
 
 	content = g_string_sized_new (512);
-	char *color = hex_value (&bg_color);
+	char *color = hex_value (&cfg.bg_color);
 	g_string_append_printf (content, "[Wallpaper]\nset_wp = %s\ncolor = %s\nwp_mode = %d\n\n"
-			"[Config]\ndirs = %s\n", set_wp, color, wp_mode, dir);
+			"[Config]\ndirs = %s\n", cfg.set_wp, color, cfg.wp_mode, cfg.dir);
 	g_free ((gpointer) color);
 	if (!g_file_set_contents (path, content->str, content->len, NULL))
 		g_fprintf (stderr, "Error: failed to write to config file %s", path);
@@ -373,9 +384,9 @@ int load_config (const char *path) {
 		GError *errr = NULL;
 		char *color;
 
-		dir = g_key_file_get_string (config, "Config", "dirs", &errr);
-		set_wp = g_key_file_get_string (config, "Wallpaper", "set_wp", &errr);
-		wp_mode = g_key_file_get_integer (config, "Wallpaper", "wp_mode", &errr);
+		cfg.dir = g_key_file_get_string (config, "Config", "dirs", &errr);
+		cfg.set_wp = g_key_file_get_string (config, "Wallpaper", "set_wp", &errr);
+		cfg.wp_mode = g_key_file_get_integer (config, "Wallpaper", "wp_mode", &errr);
 		color = g_key_file_get_string (config, "Wallpaper", "color", &errr);
 
 		g_key_file_free (config);
@@ -383,11 +394,11 @@ int load_config (const char *path) {
 			g_fprintf (stderr, "Error: %s.\n", errr->message);
 			g_clear_error (&errr);
 		}
-		if (!gdk_rgba_parse (&bg_color, color))
-			{ bg_color.red = 0.0; bg_color.green = 0.0; bg_color.blue = 0.0; bg_color.alpha = 1.0; }
+		if (!gdk_rgba_parse (&cfg.bg_color, color))
+			{ cfg.bg_color.red = 0.0; cfg.bg_color.green = 0.0; cfg.bg_color.blue = 0.0; cfg.bg_color.alpha = 1.0; }
 		g_free ((gpointer) color);
 #ifdef DEBUG
-		g_fprintf (stdout, "dir:     %s\nset_wp:  %s\nwp_mode: %d\n\n", dir, set_wp, wp_mode);
+		g_fprintf (stdout, "dir:     %s\nset_wp:  %s\nwp_mode: %d\n\n", cfg.dir, cfg.set_wp, cfg.wp_mode);
 #endif
 	}
 
@@ -481,7 +492,7 @@ static GtkWidget *create_window (GtkListStore *store) {
 	button_exit = gtk_button_new_with_label (_("Exit"));
 
 	/* Color button */
-	button_color = gtk_color_button_new_with_rgba (&bg_color);
+	button_color = gtk_color_button_new_with_rgba (&cfg.bg_color);
 	gtk_color_chooser_set_use_alpha (GTK_COLOR_CHOOSER (button_color), FALSE);
 	g_signal_connect (button_color, "color-set", G_CALLBACK (on_color_button_clicked), NULL);
 
@@ -497,7 +508,7 @@ static GtkWidget *create_window (GtkListStore *store) {
 	renderer = gtk_cell_renderer_text_new ();
 	gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo_mode), renderer, TRUE);
 	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (combo_mode), renderer, "text", 0, NULL);
-	gtk_combo_box_set_active (GTK_COMBO_BOX (combo_mode), wp_mode);
+	gtk_combo_box_set_active (GTK_COMBO_BOX (combo_mode), cfg.wp_mode);
 	g_signal_connect (combo_mode, "changed", G_CALLBACK (on_combo_changed), NULL);
 
 	g_signal_connect (button_about, "clicked", G_CALLBACK (on_about_button_clicked), window);
@@ -574,13 +585,13 @@ int main (int argc, char **argv) {
 	textdomain (GETTEXT_PACKAGE);
 #endif
 
-	if (!(dpy = XOpenDisplay (NULL))) {
+	if (!(xcon.dpy = XOpenDisplay (NULL))) {
 		g_fprintf (stderr, "Error: can not open X display to set wallpaper.\n");
 		return -1;
 	}
-	screen_num = DefaultScreen (dpy);
-	root = RootWindow (dpy, screen_num);
-	gdk_pixbuf_xlib_init (dpy, screen_num);
+	xcon.screen_num = DefaultScreen (xcon.dpy);
+	xcon.root = RootWindow (xcon.dpy, xcon.screen_num);
+	gdk_pixbuf_xlib_init (xcon.dpy, xcon.screen_num);
 
 	if ((option = get_options (argc, argv) != 0))
 		return option < 0 ? -1 : 0;
@@ -598,10 +609,10 @@ int main (int argc, char **argv) {
 	gtk_widget_show_all (window);
 	gtk_main ();
 
-	if (config_changed)
+	if (cfg.config_changed)
 		save_config (config_file);
 
 	g_free ((gpointer) config_file);
-	XCloseDisplay (dpy);
+	XCloseDisplay (xcon.dpy);
 	return 0;
 }
