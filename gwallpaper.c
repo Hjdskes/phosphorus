@@ -84,24 +84,26 @@ static int set_background (void) {
 	GC gc;
 	XGCValues gcv;
 	XColor xcolor;
-	Atom prop_root = None, prop_esetroot = None;
+	GdkPixbuf *pix, *scaled;
+	Atom prop_root = None, prop_esetroot = None, type;
+	GError *err = NULL;
+	unsigned long length, after;
+	unsigned char *data_root, *data_esetroot;
+	int format, x = 0, y = 0, src_w = 0, src_h = 0, dest_w = 0, dest_h = 0;
 
 #ifdef DEBUG
 	g_fprintf (stdout, "set_wp: %s\n", cfg.set_wp);
 #endif
 
-	GError *err = NULL;
-	GdkPixbuf *pix = gdk_pixbuf_new_from_file (cfg.set_wp, &err);
+	pix = gdk_pixbuf_new_from_file (cfg.set_wp, &err);
 	if (err) {
 		g_fprintf (stderr, "Error: %s\n", err->message);
 		g_clear_error (&err);
 		return -1;
 	}
 
-	int x = 0, y = 0;
-	int src_w = gdk_pixbuf_get_width (pix);
-	int src_h = gdk_pixbuf_get_height (pix);
-	int dest_w = 0, dest_h = 0;
+	src_w = gdk_pixbuf_get_width (pix);
+	src_h = gdk_pixbuf_get_height (pix);
 	if (cfg.wp_mode == WP_TILE) {
 		dest_w = src_w;
 		dest_h = src_h;
@@ -115,7 +117,6 @@ static int set_background (void) {
 			src_w, src_h, dest_w, dest_h);
 #endif
 
-	GdkPixbuf *scaled;
 	switch (cfg.wp_mode) {
 		case WP_COLOR:
 			g_fprintf (stderr, "Error: not implemented yet.\n");
@@ -135,7 +136,6 @@ static int set_background (void) {
 				scaled = gdk_pixbuf_scale_simple (pix, dest_w, dest_h, GDK_INTERP_BILINEAR);
 			g_object_unref (pix);
 			pix = scaled;
-			g_object_unref (scaled);
 			break;
 		case WP_FIT:
 #ifdef DEBUG
@@ -182,20 +182,15 @@ static int set_background (void) {
 
 	gdk_pixbuf_xlib_render_pixmap_and_mask (pix, &xpixmap, NULL, 1);
 
-	Atom type;
-	int format;
-	unsigned long length, after;
-	unsigned char *data_root, *data_esetroot;
-
 	prop_root = XInternAtom (xcon.dpy, "_XROOTPMAP_ID", True);
 	prop_esetroot = XInternAtom (xcon.dpy, "ESETROOT_PMAP_ID", True);
 
 	if (prop_root != None && prop_esetroot != None) {
-		XGetWindowProperty (xcon.dpy, xcon.root, prop_root, 0L, 1L, False, AnyPropertyType, &type, &format,
-				&length, &after, &data_root);
+		XGetWindowProperty (xcon.dpy, xcon.root, prop_root, 0L, 1L, False, AnyPropertyType, &type,
+				&format, &length, &after, &data_root);
 		if (type == XA_PIXMAP) {
-			XGetWindowProperty (xcon.dpy, xcon.root, prop_esetroot, 0L, 1L, False, AnyPropertyType, &type,
-					&format, &length, &after, &data_esetroot);
+			XGetWindowProperty (xcon.dpy, xcon.root, prop_esetroot, 0L, 1L, False, AnyPropertyType,
+					&type, &format, &length, &after, &data_esetroot);
 			if (data_root && data_esetroot)
 				if (type == XA_PIXMAP && *((Pixmap *) data_root) == *((Pixmap *) data_esetroot))
 					XKillClient (xcon.dpy, *((Pixmap *) data_root));
@@ -222,8 +217,10 @@ static int set_background (void) {
 	XFlush (xcon.dpy);
 	XFreePixmap (xcon.dpy, xpixmap);
 	XFreeGC (xcon.dpy, gc);
-	if (pix)
+	if (pix || cfg.wp_mode != 0)
 		g_object_unref (pix);
+	if (cfg.wp_mode == 2 || cfg.wp_mode == 3)
+		g_object_unref (scaled);
 
 	return 0;
 }
