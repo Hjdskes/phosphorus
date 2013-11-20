@@ -18,9 +18,9 @@
  */
 
 /* TODO:
+ * fix coordinates of wallpapers
  * create/use existing cache for thumbs
  * graphical preferences to go with config?
- * have a --restore option
  * polish UI with images a là Nitrogen
  * support multi-monitors / Xinerama
  * support more cmdline parameters a là Nitrogen
@@ -39,11 +39,11 @@
 #define VERSION_STRING "0.1"
 
 enum {
-  WP_COLOR = 0,
-  WP_TILE,
-  WP_SCALED,
-  WP_FIT,
-  WP_CENTER
+	WP_COLOR = 0,
+	WP_TILE,
+	WP_SCALED,
+	WP_FIT,
+	WP_CENTER
 };
 
 struct xconnection {
@@ -120,7 +120,7 @@ static int set_background (void) {
 		case WP_COLOR:
 			g_fprintf (stderr, "Error: not implemented yet.\n");
 			return 0;
-		case WP_TILE:
+		case WP_TILE: /* do nothing here */
 #ifdef DEBUG
 			g_fprintf (stdout, "wp_mode: tile\n\n");
 #endif
@@ -169,8 +169,9 @@ static int set_background (void) {
 #endif
 
 	char *bg_color_string = hex_value (&cfg.bg_color);
-	if (bg_color_string && XParseColor (xcon.dpy, DefaultColormap (xcon.dpy, xcon.screen_num), bg_color_string,
-			&xcolor) && XAllocColor (xcon.dpy, DefaultColormap (xcon.dpy, xcon.screen_num), &xcolor))
+	if (bg_color_string && XParseColor (xcon.dpy, DefaultColormap (xcon.dpy, xcon.screen_num),
+			bg_color_string, &xcolor) && XAllocColor (xcon.dpy, DefaultColormap (xcon.dpy,
+			xcon.screen_num), &xcolor))
 		gcv.foreground = gcv.background = xcolor.pixel;
 	else
 		gcv.foreground = gcv.background = BlackPixel (xcon.dpy, xcon.screen_num);
@@ -330,12 +331,6 @@ static void on_combo_changed (GtkComboBox *combo, gpointer user_data) {
 	cfg.wp_mode = gtk_combo_box_get_active (combo);
 }
 
-static void on_selection_changed (GtkIconView *view, gpointer user_data) {
-	GtkWidget *button = (GtkWidget *)user_data;
-
-	gtk_widget_set_sensitive (button, TRUE);
-}
-
 static void on_item_activated (GtkIconView *view, GtkTreePath *path, gpointer user_data) {
 	GtkTreeModel *model;
 	GtkTreeIter iter;
@@ -488,7 +483,6 @@ static GtkWidget *create_window (GtkListStore *store) {
 	box_buttons = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
 	button_about = gtk_button_new_with_label (_("About"));
 	button_apply = gtk_button_new_with_label (_("Apply"));
-	gtk_widget_set_sensitive (button_apply, FALSE);
 	button_exit = gtk_button_new_with_label (_("Exit"));
 
 	/* Color button */
@@ -514,8 +508,6 @@ static GtkWidget *create_window (GtkListStore *store) {
 	g_signal_connect (button_about, "clicked", G_CALLBACK (on_about_button_clicked), window);
 	g_signal_connect (button_apply, "clicked", G_CALLBACK (on_apply_button_clicked), NULL);
 	g_signal_connect (button_exit, "clicked", G_CALLBACK (gtk_main_quit), NULL);
-	g_signal_connect (icon_view, "selection-changed", G_CALLBACK (on_selection_changed),
-			button_apply);
 	g_signal_connect (icon_view, "item-activated", G_CALLBACK (on_item_activated), NULL);
 
 	gtk_box_pack_start (GTK_BOX (box_buttons), button_about, FALSE, FALSE, 0);
@@ -535,7 +527,8 @@ static int get_options (int argc, char **argv) {
 	gboolean display_version = FALSE;
 
 	GOptionEntry option_entries[] = {
-		{ "version",  'v', 0, G_OPTION_ARG_NONE, &display_version, "Display version and exit", NULL },
+		{ "version",  'v', 0, G_OPTION_ARG_NONE, &display_version, "Display version and exit", 
+				NULL },
 		{ "restore",  'r', 0, G_OPTION_ARG_NONE, &restore_background, "Use symbolic icons", NULL },
 		{ NULL },
 	};
