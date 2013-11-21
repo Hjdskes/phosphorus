@@ -217,9 +217,9 @@ static int set_background (void) {
 	XFlush (xcon.dpy);
 	XFreePixmap (xcon.dpy, xpixmap);
 	XFreeGC (xcon.dpy, gc);
-	if (pix || cfg.wp_mode != 0)
+	if (pix || cfg.wp_mode != WP_COLOR)
 		g_object_unref (pix);
-	if (cfg.wp_mode == 2 || cfg.wp_mode == 3)
+	if (cfg.wp_mode == WP_SCALED || cfg.wp_mode == WP_FIT)
 		g_object_unref (scaled);
 
 	return 0;
@@ -230,12 +230,16 @@ static GSList *load_wallpapers_in_dir (const char *wp_dir, GSList *wallpapers) {
 
 	if ((dir = g_dir_open (wp_dir, 0, NULL))) {
 		const char *name;
-		while ((name = g_dir_read_name (dir))) { //FIXME: recursive
-			/* test if we already have this in list */
-			if (!g_slist_find_custom (wallpapers, name, (GCompareFunc) strcmp)) {
-				const char *path = g_build_filename (wp_dir, name, NULL); //FIXME: simplify?
-				wallpapers = g_slist_prepend (wallpapers, g_strdup (path));
-				g_free ((gpointer) path);
+		while ((name = g_dir_read_name (dir))) {
+			const char *path = g_build_filename (wp_dir, name, NULL); //FIXME: simplify?
+			if (g_file_test (path, G_FILE_TEST_IS_DIR) == TRUE)
+				wallpapers = load_wallpapers_in_dir (path, wallpapers);
+			else {
+				/* test if we already have this in list */
+				if (!g_slist_find_custom (wallpapers, path, (GCompareFunc) strcmp)) {
+					wallpapers = g_slist_prepend (wallpapers, g_strdup (path));
+					g_free ((gpointer) path);
+				}
 			}
 		}
 		g_dir_close (dir);
@@ -312,7 +316,7 @@ static void on_apply_button_clicked (GtkButton *button, gpointer user_data) {
 
 	cfg.config_changed = 1;
 	model = gtk_icon_view_get_model (GTK_ICON_VIEW (icon_view));
-	path = gtk_tree_model_get_path (model, &iter);
+	path = gtk_tree_model_get_path (model, &iter); //FIXME: fails
 	if (!gtk_tree_model_get_iter (model, &iter, path)) {
 		g_fprintf (stderr, "Error: can not determine activated wallpaper (from apply button).\n");
 		return;
