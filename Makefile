@@ -1,13 +1,13 @@
-PROG    = gwallpaper
+PROG    = phosphorus
 
 CC      = gcc
-LIBS    = `pkg-config --cflags --libs gtk+-3.0 gdk-pixbuf-xlib-2.0` -lX11
+LIBS    = `pkg-config --cflags --libs gtk+-3.0 gdk-pixbuf-xlib-2.0` -lm -lX11
 CFLAGS  = -std=c99 -Wall -Wextra -Wno-unused-parameter
 
 PREFIX   ?= /usr/local
 BINPREFIX = $(PREFIX)/bin
 
-SRC = gwallpaper.c
+SRC = ${PROG}.c
 OBJ = $(SRC:.c=.o)
 
 all: CFLAGS += -Os
