@@ -7,7 +7,7 @@ CFLAGS  = -std=c99 -Wall -Wextra -Wno-unused-parameter
 PREFIX   ?= /usr/local
 BINPREFIX = $(PREFIX)/bin
 
-SRC = ${PROG}.c
+SRC = src/${PROG}.c src/ui.c src/callbacks.c src/background.c
 OBJ = $(SRC:.c=.o)
 
 all: CFLAGS += -Os
@@ -25,7 +25,7 @@ $(PROG): $(OBJ)
 install:
 	mkdir -p $(DESTDIR)$(BINPREFIX)
 	mkdir -p $(DESTDIR)/usr/share/applications/
-	install -m 0755 $(PROG) $(DESTDIR)/$(BINPREFIX)/
+	install -m 0755 src/$(PROG) $(DESTDIR)/$(BINPREFIX)/
 	install -m 0644 data/$(PROG).desktop $(DESTDIR)/usr/share/applications/
 
 uninstall:
@@ -33,6 +33,6 @@ uninstall:
 	rm -f /usr/share/applications/$(PROG).desktop
 
 clean:
-	rm -f $(OBJ) $(PROG)
+	rm -f $(OBJ) src/$(PROG)
 
 .PHONY: all debug clean install uninstall
