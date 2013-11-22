@@ -39,6 +39,15 @@
 #include "background.h"
 #include "ui.h"
 
+xconnection xcon = {0};
+configuration cfg = {
+	NULL,
+	NULL,
+	0,
+	0,
+	{ .0, .0, .0, 1.0 }
+};
+
 static gchar *hex_value (GdkRGBA *color) {
 	int red = color->red * 255;
 	int green = color->green * 255;
@@ -142,41 +151,40 @@ static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> th
 	}
 }
 
-int save_config (const char *path) {
+static int save_config (const char *path) { //FIXME: fix storing of dirs
 	GString *content;
 
 	content = g_string_sized_new (512);
 	g_string_append_printf (content, "[Wallpaper]\nset_wp = %s\ncolor = %s\nwp_mode = %d\n\n"
-			"[Config]\ndirs = %s\n", cfg.set_wp, hex_value (&cfg.bg_color), cfg.wp_mode, *cfg.dirs);
+			"[Config]\ndirs = ", cfg.set_wp, hex_value (&cfg.bg_color), cfg.wp_mode);
 	if (!g_file_set_contents (path, content->str, content->len, NULL))
 		g_fprintf (stderr, "Error: failed to write to config file %s", path);
 	return 0;
 }
 
-int load_config (const char *path) {
+static int load_config (const char *path) {
 	GKeyFile *config;
 	GError *err = NULL;
 
 	config = g_key_file_new ();
-	if (g_key_file_load_from_file (config, path, G_KEY_FILE_NONE, &err) == FALSE) {
+	if (!g_key_file_load_from_file (config, path, G_KEY_FILE_NONE, &err)) {
 		if (err) {
 			g_fprintf (stderr, "Error: %s.\n", err->message);
 			g_clear_error (&err);
 		}
 		return -1;
 	} else {
-		GError *errr = NULL;
 		char *color;
 
-		cfg.dirs = g_key_file_get_string_list (config, "Config", "dirs", NULL, &errr);
-		cfg.set_wp = g_key_file_get_string (config, "Wallpaper", "set_wp", &errr);
-		cfg.wp_mode = g_key_file_get_integer (config, "Wallpaper", "wp_mode", &errr);
-		color = g_key_file_get_string (config, "Wallpaper", "color", &errr);
+		cfg.set_wp = g_key_file_get_string (config, "Wallpaper", "set_wp", &err);
+		cfg.wp_mode = g_key_file_get_integer (config, "Wallpaper", "wp_mode", &err);
+		color = g_key_file_get_string (config, "Wallpaper", "color", &err);
+		cfg.dirs = g_key_file_get_string_list (config, "Config", "dirs", NULL, &err);
 
 		g_key_file_free (config);
-		if (errr) {
-			g_fprintf (stderr, "Error: %s.\n", errr->message);
-			g_clear_error (&errr);
+		if (err) {
+			g_fprintf (stderr, "Error: %s.\n", err->message);
+			g_clear_error (&err);
 		}
 		if (!gdk_rgba_parse (&cfg.bg_color, color))
 			{ cfg.bg_color.red = 0.0; cfg.bg_color.green = 0.0; cfg.bg_color.blue = 0.0; cfg.bg_color.alpha = 1.0; }

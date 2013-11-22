@@ -20,7 +20,7 @@ debug: all
 	$(CC) $(LIBS) $(CFLAGS) -c -o $@ $<
 
 $(PROG): $(OBJ)
-	$(CC) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)
+	$(CC) -o src/$@ $(OBJ) $(LDFLAGS) $(LIBS)
 
 install:
 	mkdir -p $(DESTDIR)$(BINPREFIX)

@@ -232,7 +232,6 @@ int set_background (void) {
 			outpix = pixbuf_make_zoom_fill (pix, win_w, win_h);
 			break;
 	}
-	g_object_unref (pix);
 
 	gdk_pixbuf_xlib_render_pixmap_and_mask (outpix, &xpixmap, NULL, 1);
 	g_object_unref (outpix);

@@ -41,27 +41,25 @@ enum {
 	WP_ZOOMED_FILL
 };
 
-struct xconnection {
+typedef struct _xconnection	xconnection;
+struct _xconnection {
 	Display *dpy;
 	Window   root;
 	int      screen_num;
-} xcon;
+};
 
-struct config {
+typedef struct _configuration configuration;
+struct _configuration {
 	char       **dirs;
 	const char  *set_wp;
 	unsigned int wp_mode;
 	unsigned int config_changed;
 	GdkRGBA      bg_color;
-} cfg = {
-	NULL,
-	NULL,
-	0,
-	0,
-	{ .0, .0, .0, 1.0 }
 };
 
 GtkWidget *icon_view;
+extern xconnection xcon;
+extern configuration cfg;
 
 guint32 int_value (GdkRGBA *color);
 
