@@ -88,22 +88,22 @@ static GSList *load_wallpapers_in_dir (const char *wp_dir, GSList *wallpapers) {
 }
 
 static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> threads?
-	char **d;
 	GSList *wallpapers = NULL;
 	GtkTreeIter sel_it = {0};
 
 	/* load directories */
-	for (d = cfg.dirs; *d != NULL; ++d) {
-		wallpapers = load_wallpapers_in_dir (*d, wallpapers);
+	cfg.dirs = g_slist_sort (cfg.dirs, (GCompareFunc) strcmp);
+	for (GSList *l = cfg.dirs; l; l = l->next) {
+		wallpapers = load_wallpapers_in_dir ((char *)l->data, wallpapers);
+		g_fprintf (stdout, "%s\n", (char *)l->data);
 	}
 
+	GtkTreeIter it;
+	GError *err = NULL;
 	wallpapers = g_slist_sort (wallpapers, (GCompareFunc) strcmp);
 	for (GSList *l = wallpapers; l; l = l->next) {
-		GtkTreeIter it;
 		GdkPixbuf *wp;
-		GError *err = NULL;
-		char *name = (char *)l->data;
-		wp = gdk_pixbuf_new_from_file (name, &err);
+		wp = gdk_pixbuf_new_from_file ((char *)l->data, &err);
 		if (err) {
 			g_fprintf (stderr, "Error: %s\n", err->message);
 			g_clear_error (&err);
@@ -126,17 +126,17 @@ static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> th
 				g_object_unref (wp);
 				wp = scaled;
 			}
-			gtk_list_store_insert_with_values (store, &it, -1, 0, wp, 1, name, -1);
+			gtk_list_store_insert_with_values (store, &it, -1, 0, wp, 1, (char *)l->data, -1);
 			g_object_unref (wp);
 		}
 		/* if this wallpaper is the one currently in use ... */
 		if (!sel_it.user_data) {
-			if (strcmp (name, cfg.set_wp) == 0)
+			if (strcmp ((char *)l->data, cfg.set_wp) == 0)
 				sel_it = it;
 		}
-		g_free (name);
 	}
 	g_slist_free (wallpapers);
+	g_slist_free (cfg.dirs);
 
 	/* ... then select that wallpaper */
 	if (sel_it.user_data) {
@@ -174,13 +174,19 @@ static int load_config (const char *path) {
 		}
 		return -1;
 	} else {
+		char **dirs, **d;
 		char *color;
 
 		cfg.set_wp = g_key_file_get_string (config, "Wallpaper", "set_wp", &err);
 		cfg.wp_mode = g_key_file_get_integer (config, "Wallpaper", "wp_mode", &err);
 		color = g_key_file_get_string (config, "Wallpaper", "color", &err);
-		cfg.dirs = g_key_file_get_string_list (config, "Config", "dirs", NULL, &err);
+		dirs = g_key_file_get_string_list (config, "Config", "dirs", NULL, &err);
 
+		for (d = dirs; *d != NULL; ++d) {
+			cfg.dirs = g_slist_prepend (cfg.dirs, g_strdupv (d));
+		}
+
+		g_strfreev (dirs);
 		g_key_file_free (config);
 		if (err) {
 			g_fprintf (stderr, "Error: %s.\n", err->message);
@@ -273,7 +279,6 @@ int main (int argc, char **argv) {
 
 	window = create_window (wp_store);
 	load_wallpapers (wp_store);
-	g_strfreev (cfg.dirs);
 	gtk_widget_show_all (window);
 	gtk_main ();
 
