@@ -150,28 +150,21 @@ static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> th
 	}
 }
 
-static int save_config (const char *path) { //FIXME: fix storing of dirs
-	/*GString *content;
+static int save_config (const char *path) {
+	char **d;
+	GString *content;
 
 	content = g_string_sized_new (512);
 	g_string_append_printf (content, "[Wallpaper]\nset_wp = %s\ncolor = %s\nwp_mode = %d\n\n"
 			"[Config]\ndirs = ", cfg.set_wp, hex_value (&cfg.bg_color), cfg.wp_mode);
-	if (!g_file_set_contents (path, content->str, content->len, NULL))
+	for (d = cfg.dirs; *d != NULL; ++d) {
+		g_string_append_printf (content, "%s;", *d);
+	}
+	if (!g_file_set_contents (path, content->str, content->len, NULL)) {
 		g_fprintf (stderr, "Error: failed to write to config file %s", path);
-	return 0;*/
-	GKeyFile *config;
-	GError *err = NULL;
-
-	config = g_key_file_new ();
-	g_key_file_set_string (config, "Wallpaper", "set_wp", cfg.set_wp);
-	g_key_file_set_integer (config, "Wallpaper", "wp_mode", cfg.wp_mode);
-	g_key_file_set_string (config, "Wallpaper", "color", hex_value (&cfg.bg_color));
-	g_key_file_set_string_list (config, "Config", "dirs", cfg.dirs, g_strv_length (cfg.dirs));
-
-	if (!g_file_set_contents (path, g_key_file_to_data (config, NULL, &err), -1, NULL))
 		return -1;
+	}
 
-	g_key_file_free (config);
 	return 0;
 }
 
@@ -200,7 +193,8 @@ static int load_config (const char *path) {
 			g_clear_error (&err);
 		}
 		if (!gdk_rgba_parse (&cfg.bg_color, color))
-			{ cfg.bg_color.red = 0.0; cfg.bg_color.green = 0.0; cfg.bg_color.blue = 0.0; cfg.bg_color.alpha = 1.0; }
+			{ cfg.bg_color.red = 0.0; cfg.bg_color.green = 0.0; cfg.bg_color.blue = 0.0;
+					cfg.bg_color.alpha = 1.0; }
 		g_free ((gpointer) color);
 	}
 
