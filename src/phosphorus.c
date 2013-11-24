@@ -152,13 +152,27 @@ static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> th
 }
 
 static int save_config (const char *path) { //FIXME: fix storing of dirs
-	GString *content;
+	/*GString *content;
 
 	content = g_string_sized_new (512);
 	g_string_append_printf (content, "[Wallpaper]\nset_wp = %s\ncolor = %s\nwp_mode = %d\n\n"
 			"[Config]\ndirs = ", cfg.set_wp, hex_value (&cfg.bg_color), cfg.wp_mode);
 	if (!g_file_set_contents (path, content->str, content->len, NULL))
 		g_fprintf (stderr, "Error: failed to write to config file %s", path);
+	return 0;*/
+	GKeyFile *config;
+	GError *err = NULL;
+
+	config = g_key_file_new ();
+	g_key_file_set_string (config, "Wallpaper", "set_wp", cfg.set_wp);
+	g_key_file_set_integer (config, "Wallpaper", "wp_mode", cfg.wp_mode);
+	g_key_file_set_string (config, "Wallpaper", "color", hex_value (&cfg.bg_color));
+	g_key_file_set_string_list (config, "Config", "dirs", cfg.dirs, g_strv_length (cfg.dirs));
+
+	if (!g_file_set_contents (path, g_key_file_to_data (config, NULL, &err), -1, NULL))
+		return -1;
+
+	g_key_file_free (config);
 	return 0;
 }
 
