@@ -95,7 +95,6 @@ static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> th
 	/* load directories */
 	for (d = cfg.dirs; *d != NULL; ++d) {
 		wallpapers = load_wallpapers_in_dir (*d, wallpapers);
-		g_fprintf (stdout, "%s\n", *d);
 	}
 
 	GtkTreeIter it;
