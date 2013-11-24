@@ -97,13 +97,12 @@ static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> th
 		wallpapers = load_wallpapers_in_dir (*d, wallpapers);
 	}
 
+	GtkTreeIter it;
+	GError *err = NULL;
 	wallpapers = g_slist_sort (wallpapers, (GCompareFunc) strcmp);
 	for (GSList *l = wallpapers; l; l = l->next) {
-		GtkTreeIter it;
 		GdkPixbuf *wp;
-		GError *err = NULL;
-		char *name = (char *)l->data;
-		wp = gdk_pixbuf_new_from_file (name, &err);
+		wp = gdk_pixbuf_new_from_file ((char *)l->data, &err);
 		if (err) {
 			g_fprintf (stderr, "Error: %s\n", err->message);
 			g_clear_error (&err);
@@ -126,15 +125,14 @@ static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> th
 				g_object_unref (wp);
 				wp = scaled;
 			}
-			gtk_list_store_insert_with_values (store, &it, -1, 0, wp, 1, name, -1);
+			gtk_list_store_insert_with_values (store, &it, -1, 0, wp, 1, (char *)l->data, -1);
 			g_object_unref (wp);
 		}
 		/* if this wallpaper is the one currently in use ... */
 		if (!sel_it.user_data) {
-			if (strcmp (name, cfg.set_wp) == 0)
+			if (strcmp ((char *)l->data, cfg.set_wp) == 0)
 				sel_it = it;
 		}
-		g_free (name);
 	}
 	g_slist_free (wallpapers);
 
@@ -152,13 +150,27 @@ static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> th
 }
 
 static int save_config (const char *path) { //FIXME: fix storing of dirs
-	GString *content;
+	/*GString *content;
 
 	content = g_string_sized_new (512);
 	g_string_append_printf (content, "[Wallpaper]\nset_wp = %s\ncolor = %s\nwp_mode = %d\n\n"
 			"[Config]\ndirs = ", cfg.set_wp, hex_value (&cfg.bg_color), cfg.wp_mode);
 	if (!g_file_set_contents (path, content->str, content->len, NULL))
 		g_fprintf (stderr, "Error: failed to write to config file %s", path);
+	return 0;*/
+	GKeyFile *config;
+	GError *err = NULL;
+
+	config = g_key_file_new ();
+	g_key_file_set_string (config, "Wallpaper", "set_wp", cfg.set_wp);
+	g_key_file_set_integer (config, "Wallpaper", "wp_mode", cfg.wp_mode);
+	g_key_file_set_string (config, "Wallpaper", "color", hex_value (&cfg.bg_color));
+	g_key_file_set_string_list (config, "Config", "dirs", cfg.dirs, g_strv_length (cfg.dirs));
+
+	if (!g_file_set_contents (path, g_key_file_to_data (config, NULL, &err), -1, NULL))
+		return -1;
+
+	g_key_file_free (config);
 	return 0;
 }
 
