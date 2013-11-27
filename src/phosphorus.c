@@ -71,7 +71,7 @@ static GSList *load_wallpapers_in_dir (const char *wp_dir, GSList *wallpapers) {
 	if ((dir = g_dir_open (wp_dir, 0, NULL))) {
 		const char *name;
 		while ((name = g_dir_read_name (dir))) {
-			const char *path = g_build_filename (wp_dir, name, NULL); //FIXME: simplify?
+			const char *path = g_build_filename (wp_dir, name, NULL);
 			if (g_file_test (path, G_FILE_TEST_IS_DIR) == TRUE)
 				wallpapers = load_wallpapers_in_dir (path, wallpapers);
 			else {
@@ -87,7 +87,7 @@ static GSList *load_wallpapers_in_dir (const char *wp_dir, GSList *wallpapers) {
 	return wallpapers;
 }
 
-static void load_wallpapers (GtkListStore *store) { //FIXME: speed this up -> threads?
+static void load_wallpapers (GtkListStore *store) {
 	char **d;
 	GSList *wallpapers = NULL;
 	GtkTreeIter sel_it = {0};
@@ -238,8 +238,14 @@ static int get_options (int argc, char **argv) {
 		config_file = g_build_filename (config_dir, "phosphorus/config.cfg", NULL);
 		load_config (config_file);
 		g_free ((gpointer) config_file);
-		set_background ();
-		return 1;
+		int res = set_background ();
+		g_strfreev (cfg.dirs);
+		XCloseDisplay (xcon.dpy);
+		if (res == -1) {
+			g_fprintf (stderr, "Applying background failed.\n");
+			return -1;
+		} else
+			return 1;
 	}
 
 	return 0;
@@ -249,6 +255,7 @@ int main (int argc, char **argv) {
 	int option = 0;
 	GtkWidget *window;
 	GtkListStore *wp_store;
+	GThread *load_wp_thread;
 	const char *config_dir;
 	const char *config_file;
 
@@ -278,8 +285,10 @@ int main (int argc, char **argv) {
 	wp_store = gtk_list_store_new (2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
 
 	window = create_window (wp_store);
-	load_wallpapers (wp_store);
 	gtk_widget_show_all (window);
+
+	load_wp_thread = g_thread_new ("load wallpapers", (GThreadFunc) load_wallpapers, (gpointer) wp_store);
+	g_thread_unref (load_wp_thread);
 	gtk_main ();
 
 	if (cfg.config_changed)

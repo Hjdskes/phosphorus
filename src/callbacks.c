@@ -39,7 +39,8 @@ void on_apply_button_clicked (GtkButton *button, gpointer user_data) {
 	gtk_tree_path_free (path);
 	gtk_tree_model_get (model, &iter, 1, &cfg.set_wp, -1);
 
-	set_background ();
+	if(!set_background ())
+		g_fprintf (stderr, "Error: applying background failed.\n");
 }
 
 void on_combo_changed (GtkComboBox *combo, gpointer user_data) {
@@ -59,7 +60,8 @@ void on_item_activated (GtkIconView *view, GtkTreePath *path, gpointer user_data
 	}
 	gtk_tree_model_get (model, &iter, 1, &cfg.set_wp, -1);
 
-	set_background ();
+	if(!set_background ())
+		g_fprintf (stderr, "Error: applying background failed.\n");
 }
 
 void on_color_button_clicked (GtkColorButton *button, gpointer user_data) {

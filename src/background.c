@@ -104,7 +104,7 @@ static GdkPixbuf *pixbuf_make_tiled (GdkPixbuf *base, int win_w, int win_h) {
 	/* start at 1 because the first real (0) iteration is already done from before
 	   (it's the source of our copy!) */
 	for (count = 1; count < iterations; count++) {
-		gdk_pixbuf_copy_area (base, 0, 0, win_w, ((count + 1) * src_h) > win_h ? src_h -
+		gdk_pixbuf_copy_area (base, 0, 0, src_w, ((count + 1) * src_h) > win_h ? src_h -
 				(((count + 1) * src_h) - win_h) : src_h, out, 0, count * src_h);
 	}
 
@@ -117,8 +117,8 @@ static GdkPixbuf *pixbuf_make_zoom (GdkPixbuf *base, int win_w, int win_h) {
 	int x = 0, y = 0, res_x, res_y;
 
 	/* depends on bigger side */
-	unsigned int src_w = gdk_pixbuf_get_width (base);
-	unsigned int src_h = gdk_pixbuf_get_height (base);
+	int src_w = gdk_pixbuf_get_width (base);
+	int src_h = gdk_pixbuf_get_height (base);
 
 	/* the second term (after the &&) is needed to ensure that the new height
 	   does not exceed the root window height */
@@ -231,6 +231,9 @@ int set_background (void) {
 		case WP_ZOOMED_FILL:
 			outpix = pixbuf_make_zoom_fill (pix, win_w, win_h);
 			break;
+		default:
+			g_fprintf (stderr, "Error: unknown wallpaper mode.\n");
+			return -1;
 	}
 
 	gdk_pixbuf_xlib_render_pixmap_and_mask (outpix, &xpixmap, NULL, 1);
