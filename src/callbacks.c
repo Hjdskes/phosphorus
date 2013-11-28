@@ -25,18 +25,21 @@
 #include "background.h"
 
 void on_apply_button_clicked (GtkButton *button, gpointer user_data) {
+	GList *sel_items;
 	GtkTreeIter iter;
 	GtkTreePath *path;
 	GtkTreeModel *model;
 
 	cfg.config_changed = 1;
+	sel_items = gtk_icon_view_get_selected_items (GTK_ICON_VIEW (icon_view));
 	model = gtk_icon_view_get_model (GTK_ICON_VIEW (icon_view));
-	path = gtk_tree_model_get_path (model, &iter); //FIXME: fails
+	path = g_list_nth_data (sel_items, 0); /* We are only interested in the first item, since we set selection mode to GTK_SELECTION_SINGLE */
 	if (!gtk_tree_model_get_iter (model, &iter, path)) {
 		g_fprintf (stderr, "Error: can not determine activated wallpaper (from apply button).\n");
 		return;
 	}
-	gtk_tree_path_free (path);
+
+	g_list_free_full (sel_items, (GDestroyNotify) gtk_tree_path_free);
 	gtk_tree_model_get (model, &iter, 1, &cfg.set_wp, -1);
 
 	if(!set_background ())
