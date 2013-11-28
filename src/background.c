@@ -147,7 +147,7 @@ static GdkPixbuf *pixbuf_make_zoom (GdkPixbuf *base, int win_w, int win_h) {
 	temp = gdk_pixbuf_scale_simple (base, res_x, res_y, GDK_INTERP_BILINEAR);
 	out = gdk_pixbuf_new (gdk_pixbuf_get_colorspace (base), gdk_pixbuf_get_has_alpha (base),
 			gdk_pixbuf_get_bits_per_sample (base), win_w, win_h);
-	gdk_pixbuf_fill (out, int_value(&cfg.bg_color));
+	gdk_pixbuf_fill (out, int_value (&cfg.bg_color));
 
 	gdk_pixbuf_copy_area (temp, 0, 0, gdk_pixbuf_get_width (temp), gdk_pixbuf_get_height (temp),
 			out, x, y);
@@ -225,7 +225,7 @@ int set_background (void) {
 		case WP_TILED: //FIXME: does not work correctly
 			outpix = pixbuf_make_tiled (pix, win_w, win_h);
 			break;
-		case WP_ZOOMED:
+		case WP_ZOOMED: //FIXME: leaves one pixel width line on the right
 			outpix = pixbuf_make_zoom (pix, win_w, win_h);
 			break;
 		case WP_ZOOMED_FILL:
