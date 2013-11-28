@@ -34,15 +34,14 @@ void on_apply_button_clicked (GtkButton *button, gpointer user_data) {
 	sel_items = gtk_icon_view_get_selected_items (GTK_ICON_VIEW (icon_view));
 	model = gtk_icon_view_get_model (GTK_ICON_VIEW (icon_view));
 	path = g_list_nth_data (sel_items, 0); /* We are only interested in the first item, since we set selection mode to GTK_SELECTION_SINGLE */
+	g_list_free_full (sel_items, (GDestroyNotify) gtk_tree_path_free);
 	if (!gtk_tree_model_get_iter (model, &iter, path)) {
 		g_fprintf (stderr, "Error: can not determine activated wallpaper (from apply button).\n");
 		return;
 	}
-
-	g_list_free_full (sel_items, (GDestroyNotify) gtk_tree_path_free);
 	gtk_tree_model_get (model, &iter, 1, &cfg.set_wp, -1);
 
-	if(!set_background ())
+	if (set_background () < 0)
 		g_fprintf (stderr, "Error: applying background failed.\n");
 }
 
@@ -63,7 +62,7 @@ void on_item_activated (GtkIconView *view, GtkTreePath *path, gpointer user_data
 	}
 	gtk_tree_model_get (model, &iter, 1, &cfg.set_wp, -1);
 
-	if(!set_background ())
+	if (set_background () < 0)
 		g_fprintf (stderr, "Error: applying background failed.\n");
 }
 
