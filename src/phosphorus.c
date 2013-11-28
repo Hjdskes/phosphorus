@@ -76,7 +76,7 @@ static GSList *load_wallpapers_in_dir (const char *wp_dir, GSList *wallpapers) {
 				wallpapers = load_wallpapers_in_dir (path, wallpapers);
 			else {
 				/* test if we already have this in list */
-				if (!g_slist_find_custom (wallpapers, path, (GCompareFunc) strcmp)) {
+				if (!g_slist_find_custom (wallpapers, name, (GCompareFunc) strcmp)) {
 					wallpapers = g_slist_prepend (wallpapers, g_strdup (path));
 					g_free ((gpointer) path);
 				}
@@ -209,7 +209,7 @@ static int get_options (int argc, char **argv) {
 	GOptionEntry option_entries[] = {
 		{ "version",  'v', 0, G_OPTION_ARG_NONE, &display_version, "Display version and exit", 
 				NULL },
-		{ "restore",  'r', 0, G_OPTION_ARG_NONE, &restore_background, "Use symbolic icons", NULL },
+		{ "restore",  'r', 0, G_OPTION_ARG_NONE, &restore_background, "Restore set wallpaper and exit", NULL },
 		{ NULL },
 	};
 
