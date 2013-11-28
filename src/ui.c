@@ -67,9 +67,68 @@ static void on_about_button_clicked (GtkButton *button, gpointer user_data) {
 	g_free (license_trans);
 }
 
+GtkWidget *prefs_dialog_open (GtkWindow *parent) {
+	GtkWidget *prefs_dialog, *content_area, *dirs_label, *scroll, *tree, *button_box, *add_button, *remove_button;
+	GtkListStore *liststore;
+	GtkTreeSelection *selection;
+	GtkCellRenderer *renderer;
+	GtkTreeViewColumn *column;
+	GtkTreeIter iter;
+	char **d;
+
+	prefs_dialog = gtk_dialog_new_with_buttons (_("Preferences"), parent, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			_("Cancel"), GTK_RESPONSE_REJECT, _("Ok"), GTK_RESPONSE_ACCEPT, NULL);
+	gtk_container_set_border_width (GTK_CONTAINER (prefs_dialog), 0);
+	gtk_window_set_default_size (GTK_WINDOW (prefs_dialog), 300, 300);
+	gtk_dialog_set_default_response (GTK_DIALOG (prefs_dialog), GTK_RESPONSE_REJECT);
+	gtk_dialog_set_response_sensitive (GTK_DIALOG (prefs_dialog), GTK_RESPONSE_REJECT, TRUE);
+	content_area = gtk_dialog_get_content_area (GTK_DIALOG (prefs_dialog));
+
+	dirs_label = gtk_label_new (_("Directories"));
+	gtk_label_set_justify (GTK_LABEL (dirs_label), GTK_JUSTIFY_CENTER);
+	gtk_label_set_line_wrap (GTK_LABEL (dirs_label), TRUE);
+
+	scroll = gtk_scrolled_window_new (NULL, NULL);
+	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scroll), GTK_SHADOW_IN);
+	gtk_widget_set_vexpand (scroll, TRUE);
+
+	liststore = gtk_list_store_new (1, G_TYPE_STRING);
+	tree = gtk_tree_view_new_with_model (GTK_TREE_MODEL (liststore));
+	g_object_unref (liststore);
+	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (tree), FALSE);
+	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (tree));
+	gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
+	renderer = gtk_cell_renderer_text_new ();
+	column = gtk_tree_view_column_new_with_attributes (_("Directory"), renderer, "text", 0, NULL);
+	gtk_tree_view_append_column (GTK_TREE_VIEW (tree), column);
+
+	for (d = cfg.dirs; *d != NULL; ++d) {
+		gtk_list_store_insert_with_values (liststore, &iter, -1, 0, *d, -1);
+	}
+
+	button_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
+	gtk_container_set_border_width (GTK_CONTAINER (button_box), 5);
+	add_button = gtk_button_new_with_label (_("Add"));
+	remove_button = gtk_button_new_with_label (_("Remove"));
+
+	g_signal_connect (add_button, "clicked", G_CALLBACK (on_prefs_dlg_add_btn_clicked), parent);
+	g_signal_connect (remove_button, "clicked", G_CALLBACK (on_prefs_dlg_rmv_btn_clicked), selection);
+
+	gtk_container_add (GTK_CONTAINER (content_area), dirs_label);
+	gtk_container_add (GTK_CONTAINER (scroll), tree);
+	gtk_box_pack_start (GTK_BOX (button_box), add_button, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (button_box), remove_button, FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (content_area), scroll);
+	gtk_container_add (GTK_CONTAINER (content_area), button_box);
+
+	gtk_widget_show_all (prefs_dialog);
+	return prefs_dialog;
+}
+
 GtkWidget *create_window (GtkListStore *store) {
 	GtkWidget *window, *box_all;
-	GtkWidget *box_buttons, *button_about, *button_exit, *button_apply;
+	GtkWidget *box_buttons, *button_about, *button_prefs, *button_exit, *button_apply;
 	GtkWidget *button_color, *combo_mode;
 	GtkWidget *scroll;
 	GtkListStore *wp_modes;
@@ -107,6 +166,7 @@ GtkWidget *create_window (GtkListStore *store) {
 	/* Main window buttons */
 	box_buttons = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
 	button_about = gtk_button_new_with_label (_("About"));
+	button_prefs = gtk_button_new_with_label (_("Preferences"));
 	button_apply = gtk_button_new_with_label (_("Apply"));
 	button_exit = gtk_button_new_with_label (_("Exit"));
 
@@ -132,11 +192,13 @@ GtkWidget *create_window (GtkListStore *store) {
 	g_signal_connect (combo_mode, "changed", G_CALLBACK (on_combo_changed), NULL);
 
 	g_signal_connect (button_about, "clicked", G_CALLBACK (on_about_button_clicked), window);
+	g_signal_connect (button_prefs, "clicked", G_CALLBACK (on_prefs_button_clicked), window);
 	g_signal_connect (button_apply, "clicked", G_CALLBACK (on_apply_button_clicked), NULL);
 	g_signal_connect (button_exit, "clicked", G_CALLBACK (gtk_main_quit), NULL);
 	g_signal_connect (icon_view, "item-activated", G_CALLBACK (on_item_activated), NULL);
 
 	gtk_box_pack_start (GTK_BOX (box_buttons), button_about, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (box_buttons), button_prefs, FALSE, FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (box_buttons), combo_mode, FALSE, FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (box_buttons), button_color, FALSE, FALSE, 0);
 	gtk_box_pack_end (GTK_BOX (box_buttons), button_apply, FALSE, FALSE, 0);

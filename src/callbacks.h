@@ -23,6 +23,9 @@
 G_BEGIN_DECLS
 
 void on_apply_button_clicked (GtkButton *button, gpointer user_data);
+void on_prefs_dlg_rmv_btn_clicked (GtkButton *button, gpointer user_data);
+void on_prefs_dlg_add_btn_clicked (GtkButton *button, gpointer user_data);
+void on_prefs_button_clicked (GtkButton *button, gpointer user_data);
 void on_combo_changed (GtkComboBox *combo, gpointer user_data);
 void on_item_activated (GtkIconView *view, GtkTreePath *path, gpointer user_data);
 void on_color_button_clicked (GtkColorButton *button, gpointer user_data);

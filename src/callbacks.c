@@ -23,6 +23,7 @@
 
 #include "phosphorus.h"
 #include "background.h"
+#include "ui.h"
 
 void on_apply_button_clicked (GtkButton *button, gpointer user_data) {
 	GList *sel_items;
@@ -43,6 +44,59 @@ void on_apply_button_clicked (GtkButton *button, gpointer user_data) {
 
 	if (set_background () < 0)
 		g_fprintf (stderr, "Error: applying background failed.\n");
+}
+
+void on_prefs_dlg_rmv_btn_clicked (GtkButton *button, gpointer user_data) {
+	GtkTreeSelection *selection = (GtkTreeSelection *)user_data;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+
+	cfg.config_changed = 1;
+	if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
+		char **d;
+		char *filename;
+
+		gtk_tree_model_get (model, &iter, 0, &filename, -1);
+		for (d = cfg.dirs; *d != NULL; ++d) {
+			//if (g_strcmp0 (filename, *d) == 0)
+				//remove from string array
+		}
+	} else
+		g_fprintf (stderr, "Error: can't get selected directory to delete.\n");
+}
+
+void on_prefs_dlg_add_btn_clicked (GtkButton *button, gpointer user_data) {
+	GtkWidget *dialog;
+
+	cfg.config_changed = 1;
+	dialog = gtk_file_chooser_dialog_new (_("Pick a directory"), (GtkWindow *) user_data,
+			GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("Cancel"), GTK_RESPONSE_CANCEL,
+			_("Open"), GTK_RESPONSE_ACCEPT, NULL);
+	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
+		char *filename;
+
+		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+		*cfg.dirs = g_strjoinv (";", cfg.dirs);
+		g_free (filename);
+	}
+
+	gtk_widget_destroy (dialog);
+}
+
+void on_prefs_button_clicked (GtkButton *button, gpointer user_data) {
+	GtkWidget *dialog;
+	int result;
+
+	dialog = prefs_dialog_open ((GtkWindow *) user_data);
+	result = gtk_dialog_run (GTK_DIALOG (dialog));
+	switch (result) {
+		case GTK_RESPONSE_OK:
+			//reload config and images?
+		case GTK_RESPONSE_CANCEL:
+		default:
+			break;
+	}
+	gtk_widget_destroy (dialog);
 }
 
 void on_combo_changed (GtkComboBox *combo, gpointer user_data) {
