@@ -23,7 +23,6 @@ intltool-update.in
 libtool
 ltmain.sh
 missing
-po/
 src/.deps/
 src/Makefile
 src/Makefile.in
@@ -45,3 +44,4 @@ po/missing
 po/po2tbl.sed
 po/po2tbl.sed.in
 po/stamp-cat-id
+po/stamp-it
