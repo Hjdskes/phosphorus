@@ -58,7 +58,7 @@ void on_prefs_dlg_rmv_btn_clicked (GtkButton *button, gpointer user_data) {
 
 		gtk_tree_model_get (model, &iter, 0, &filename, -1);
 		for (d = cfg.dirs; *d != NULL; ++d) {
-			//if (g_strcmp0 (filename, *d) == 0)
+			//if (g_strcmp0 (filename, *d) == 0) //FIXME
 				//remove from string array
 		}
 	} else
@@ -76,7 +76,7 @@ void on_prefs_dlg_add_btn_clicked (GtkButton *button, gpointer user_data) {
 		char *filename;
 
 		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-		//*cfg.dirs = g_strjoinv (";", cfg.dirs);
+		//*cfg.dirs = g_strjoinv (";", cfg.dirs); //FIXME
 		g_free (filename);
 	}
 

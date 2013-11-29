@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gtk/gtk.h>
-#include <glib/gi18n.h>
 #include <glib/gprintf.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -257,7 +256,7 @@ int main (int argc, char **argv) {
 	const char *config_dir;
 	const char *config_file;
 
-#ifdef ENABLE_NLS //FIXME: implement gettext support
+#ifdef ENABLE_NLS
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
