@@ -1,7 +1,10 @@
 SUBDIRS = icons
 
 desktopdir = $(datadir)/applications
-desktop_DATA = phosphorus.desktop
+
+desktop_in_files = phosphorus.desktop.in
+desktop_DATA = $(phosphorus:.desktop.in=.desktop)
+@INTLTOOL_DESKTOP_RULE@
 
 UPDATE_DESKTOP = update-desktop-database $(datadir)/applications || :
 

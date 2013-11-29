@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-_Name=Phosphorus
+Name=Phosphorus
 _GenericName=A simple wallpaper setter.
 _Comment=Choose an image and set it as wallpaper.
 Icon=preferences-wallpaper
