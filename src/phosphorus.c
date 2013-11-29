@@ -19,8 +19,6 @@
 
 /* TODO:
  * create/use existing cache for thumbs
- * graphical preferences to go with config?
- * polish UI with images a là Nitrogen
  * support multi-monitors / Xinerama
  * support more cmdline parameters a là Nitrogen
  */

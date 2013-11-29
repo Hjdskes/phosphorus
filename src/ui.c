@@ -133,6 +133,9 @@ GtkWidget *create_window (GtkListStore *store) {
 	GtkWidget *scroll;
 	GtkListStore *wp_modes;
 	GtkCellRenderer *renderer;
+	GtkIconTheme *icon_theme;
+	GdkPixbuf *generic_icon, *icon;
+	GError *err = NULL;
 
 	/* Main window */
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -176,18 +179,63 @@ GtkWidget *create_window (GtkListStore *store) {
 	g_signal_connect (button_color, "color-set", G_CALLBACK (on_color_button_clicked), NULL);
 
 	/* Combo box */
-	wp_modes = gtk_list_store_new (1, G_TYPE_STRING);
-	gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, _("Automatic"), -1);
-	gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, _("Scaled"), -1);
-	gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, _("Centered"), -1);
-	gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, _("Tiled"), -1);
-	gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, _("Zoomed"), -1);
-	gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, _("Zoomed Fill"), -1);
+	wp_modes = gtk_list_store_new (2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	icon_theme = gtk_icon_theme_get_default ();
+	generic_icon = gtk_icon_theme_load_icon (icon_theme, "image-x-generic", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
+	if (err) {
+		gdk_pixbuf_new (GDK_COLORSPACE_RGB, FALSE, 8, 16, 16);
+		g_fprintf (stderr, "%s\n", err->message);
+		g_clear_error (&err);
+	}
+	gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, generic_icon, 1, _("Automatic"), -1);
+	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-scaled-16", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
+	if (!err)
+		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, icon, 1, _("Scaled"), -1);
+	else {
+		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, generic_icon, 1, _("Scaled"), -1);
+		g_fprintf (stderr, "%s\n", err->message);
+		g_clear_error (&err);
+	}
+	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-centered-16", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
+	if (!err)
+		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, icon, 1, _("Centered"), -1);
+	else {
+		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, generic_icon, 1, _("Centered"), -1);
+		g_fprintf (stderr, "%s\n", err->message);
+		g_clear_error (&err);
+	}
+	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-tiled-16", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
+	if (!err)
+		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, icon, 1, _("Tiled"), -1);
+	else {
+		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, generic_icon, 1, _("Tiled"), -1);
+		g_fprintf (stderr, "%s\n", err->message);
+		g_clear_error (&err);
+	}
+	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-zoomed-16", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
+	if (!err)
+		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, icon, 1, _("Zoomed"), -1);
+	else {
+		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, generic_icon, 1, _("Zoomed"), -1);
+		g_fprintf (stderr, "%s\n", err->message);
+		g_clear_error (&err);
+	}
+	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-zoomed-16", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
+	if (!err)
+		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, icon, 1, _("Zoomed Fill"), -1);
+	else {
+		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, generic_icon, 1, _("Zoomed Fill"), -1);
+		g_fprintf (stderr, "%s\n", err->message);
+		g_clear_error (&err);
+	}
 	combo_mode = gtk_combo_box_new_with_model (GTK_TREE_MODEL (wp_modes));
 	g_object_unref (wp_modes);
+	renderer = gtk_cell_renderer_pixbuf_new ();
+	gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo_mode), renderer, TRUE);
+	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (combo_mode), renderer, "pixbuf", 0, NULL);
 	renderer = gtk_cell_renderer_text_new ();
 	gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo_mode), renderer, TRUE);
-	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (combo_mode), renderer, "text", 0, NULL);
+	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (combo_mode), renderer, "text", 1, NULL);
 	gtk_combo_box_set_active (GTK_COMBO_BOX (combo_mode), cfg.wp_mode);
 	g_signal_connect (combo_mode, "changed", G_CALLBACK (on_combo_changed), NULL);
 

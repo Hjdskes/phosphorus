@@ -76,7 +76,7 @@ void on_prefs_dlg_add_btn_clicked (GtkButton *button, gpointer user_data) {
 		char *filename;
 
 		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-		*cfg.dirs = g_strjoinv (";", cfg.dirs);
+		//*cfg.dirs = g_strjoinv (";", cfg.dirs);
 		g_free (filename);
 	}
 
