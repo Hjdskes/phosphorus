@@ -256,11 +256,9 @@ int main (int argc, char **argv) {
 	const char *config_dir;
 	const char *config_file;
 
-#ifdef ENABLE_NLS
 	bindtextdomain (GETTEXT_PACKAGE, LOCALE_DIR);
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
-#endif
 
 	if (!(xcon.dpy = XOpenDisplay (NULL))) {
 		g_fprintf (stderr, "Error: can not open X display to set wallpaper.\n");
