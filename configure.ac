@@ -48,4 +48,4 @@ AC_CONFIG_FILES([Makefile src/Makefile data/Makefile data/phosphorus.desktop dat
 AC_OUTPUT
 
 echo ""
-echo "You can now type \"make\" to compile phosphorus"
+echo "You can now type \"make\" to compile phosphorus."

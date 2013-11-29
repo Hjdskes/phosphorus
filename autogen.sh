@@ -142,4 +142,4 @@ do
 done
 
 echo
-echo You can now run \`./configure\'. || exit 1
+echo You can now run \"./configure\". || exit 1
