@@ -19,7 +19,6 @@
 
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
-#include <glib/gprintf.h>
 
 #include "phosphorus.h"
 #include "background.h"

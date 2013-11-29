@@ -18,13 +18,7 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
 #include <gtk/gtk.h>
-#include <glib/gprintf.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-#include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
 
 #include "phosphorus.h"
 #include "background.h"
@@ -216,7 +210,7 @@ static int get_options (int argc, char **argv) {
 	g_option_context_free (option_context);
 
 	if (display_version == TRUE) {
-		g_fprintf (stdout, "Phosphorus: a simple and lightweight background setter. Version %s.\n",
+		g_fprintf (stdout, "Phosphorus: a simple wallpaper browser and setter. Version %s.\n",
 				VERSION_STRING);
 		return 1;
 	}

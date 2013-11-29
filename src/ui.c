@@ -19,7 +19,6 @@
 
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
-#include <glib/gprintf.h>
 
 #include "phosphorus.h"
 #include "callbacks.h"
@@ -50,7 +49,7 @@ static void on_about_button_clicked (GtkButton *button, gpointer user_data) {
 
 	gtk_about_dialog_set_program_name (GTK_ABOUT_DIALOG (about_dialog), "Phosphorus");
 	gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (about_dialog), "0.1");
-	gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (about_dialog), _("A simple wallpaper setter")),
+	gtk_about_dialog_set_comments (GTK_ABOUT_DIALOG (about_dialog), _("A simple wallpaper browser and setter")),
 	gtk_about_dialog_set_copyright (GTK_ABOUT_DIALOG (about_dialog), "Copyright \xc2\xa9 2013 Jente Hidskes");
 	gtk_about_dialog_set_license (GTK_ABOUT_DIALOG (about_dialog), license_trans);
 	gtk_about_dialog_set_wrap_license (GTK_ABOUT_DIALOG (about_dialog), TRUE);

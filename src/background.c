@@ -18,9 +18,6 @@
  */
 
 #include <math.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
 #include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
 
 #include "phosphorus.h"
