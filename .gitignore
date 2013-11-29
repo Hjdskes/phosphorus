@@ -36,7 +36,6 @@ po/*.mo
 po/*.pot
 po/Makefile
 po/Makefile.in
-po/Makefile.in.in
 po/POTFILES
 po/cat-id-tbl.c
 po/messages
