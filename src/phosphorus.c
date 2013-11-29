@@ -78,13 +78,13 @@ static void load_wallpapers (GtkListStore *store) {
 	GtkTreeIter sel_it = {0};
 
 	/* load directories */
-	for (d = cfg.dirs; *d != NULL; ++d) {
-		wallpapers = load_wallpapers_in_dir (*d, wallpapers);
+	for (GSList *l = cfg.dirs; l; l = l->next) {
+		wallpapers = load_wallpapers_in_dir ((char *)l->data, wallpapers);
 	}
 
 	GtkTreeIter it;
 	GError *err = NULL;
-	wallpapers = g_slist_sort (wallpapers, (GCompareFunc) strcmp);
+	//wallpapers = g_slist_sort (wallpapers, (GCompareFunc) strcmp);
 	for (GSList *l = wallpapers; l; l = l->next) {
 		GdkPixbuf *wp;
 		wp = gdk_pixbuf_new_from_file ((char *)l->data, &err);
@@ -141,8 +141,8 @@ static int save_config (const char *path) {
 	content = g_string_sized_new (512);
 	g_string_append_printf (content, "[Wallpaper]\nset_wp = %s\ncolor = %s\nwp_mode = %d\n\n"
 			"[Config]\ndirs = ", cfg.set_wp, hex_value (&cfg.bg_color), cfg.wp_mode);
-	for (d = cfg.dirs; *d != NULL; ++d) {
-		g_string_append_printf (content, "%s;", *d);
+	for (GSList *l = cfg.dirs; l; l = l->next) {
+		g_string_append_printf (content, "%s;", (char *)l->data);
 	}
 	if (!g_file_set_contents (path, content->str, content->len, NULL)) {
 		g_fprintf (stderr, "Error: failed to write to config file %s", path);
@@ -165,17 +165,23 @@ static int load_config (const char *path) {
 		return -1;
 	} else {
 		char *color;
+		char **dirs;
 
 		cfg.set_wp = g_key_file_get_string (config, "Wallpaper", "set_wp", &err);
 		cfg.wp_mode = g_key_file_get_integer (config, "Wallpaper", "wp_mode", &err);
 		color = g_key_file_get_string (config, "Wallpaper", "color", &err);
-		cfg.dirs = g_key_file_get_string_list (config, "Config", "dirs", NULL, &err);
-
+		dirs = g_key_file_get_string_list (config, "Config", "dirs", NULL, &err);
 		g_key_file_free (config);
 		if (err) {
 			g_fprintf (stderr, "Error: %s.\n", err->message);
 			g_clear_error (&err);
 		}
+
+		for (char **d = dirs; *d != NULL; ++d) {
+			cfg.dirs = g_slist_prepend (cfg.dirs, g_strdup (*d));
+		}
+		cfg.dirs = g_slist_reverse (cfg.dirs);
+		g_strfreev (dirs);
 		if (!gdk_rgba_parse (&cfg.bg_color, color))
 			{ cfg.bg_color.red = 0.0; cfg.bg_color.green = 0.0; cfg.bg_color.blue = 0.0;
 					cfg.bg_color.alpha = 1.0; }
@@ -224,7 +230,7 @@ static int get_options (int argc, char **argv) {
 		load_config (config_file);
 		g_free ((gpointer) config_file);
 		int res = set_background ();
-		g_strfreev (cfg.dirs);
+		g_slist_free_full (cfg.dirs, (GDestroyNotify) gtk_tree_path_free);
 		XCloseDisplay (xcon.dpy);
 		if (res == -1) {
 			g_fprintf (stderr, "Applying background failed.\n");
@@ -278,7 +284,7 @@ int main (int argc, char **argv) {
 		save_config (config_file);
 
 	g_free ((gpointer) config_file);
-	g_strfreev (cfg.dirs);
+	//g_slist_free_full (cfg.dirs, (GDestroyNotify) gtk_tree_path_free); //FIXME: causes segfault
 	XCloseDisplay (xcon.dpy);
 	return 0;
 }

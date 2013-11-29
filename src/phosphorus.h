@@ -50,7 +50,7 @@ struct _xconnection {
 
 typedef struct _configuration configuration;
 struct _configuration {
-	char       **dirs;
+	GSList      *dirs;
 	const char  *set_wp;
 	unsigned int wp_mode;
 	unsigned int config_changed;

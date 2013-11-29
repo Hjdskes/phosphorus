@@ -52,13 +52,12 @@ void on_prefs_dlg_rmv_btn_clicked (GtkButton *button, gpointer user_data) {
 
 	cfg.config_changed = 1;
 	if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
-		char **d;
-		char *filename;
+		const char *filename;
 
 		gtk_tree_model_get (model, &iter, 0, &filename, -1);
-		for (d = cfg.dirs; *d != NULL; ++d) {
-			//if (g_strcmp0 (filename, *d) == 0) //FIXME
-				//remove from string array
+		for (GSList *l = cfg.dirs; l; l = l->next) {
+			if (g_strcmp0 (filename, (char *)l->data) == 0) //FIXME
+				cfg.dirs = g_slist_remove (cfg.dirs, l->data);
 		}
 	} else
 		g_fprintf (stderr, "Error: can't get selected directory to delete.\n");
@@ -75,7 +74,7 @@ void on_prefs_dlg_add_btn_clicked (GtkButton *button, gpointer user_data) {
 		char *filename;
 
 		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-		//*cfg.dirs = g_strjoinv (";", cfg.dirs); //FIXME
+		cfg.dirs = g_slist_append (cfg.dirs, g_strdup (filename));
 		g_free (filename);
 	}
 
