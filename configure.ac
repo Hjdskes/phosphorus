@@ -1,7 +1,7 @@
 dnl
 dnl init phase
 dnl
-AC_INIT([Phosphorus], [0.1], [jthidskes@outlook.com])
+AC_INIT([phosphorus], [0.1], [jthidskes@outlook.com])
 AC_CONFIG_SRCDIR([src/phosphorus.c])
 AM_INIT_AUTOMAKE([-Wall])
 AM_SILENT_RULES([yes])
@@ -11,11 +11,6 @@ dnl shopping list
 dnl
 AC_PROG_CC
 PKG_PROG_PKG_CONFIG
-
-AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.18.1])
-AC_DEFINE_UNQUOTED(LOCALE_DIR, "${PREFIX}/${DATADIRNAME}/locale", [Name of gettext locale directory])
-AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [GETTEXT package name])
 
 GDK_PIXBUF_VERSION=2.26.1
 GTK3_VERSION=3.4.2
@@ -38,7 +33,7 @@ AC_SUBST(PHOSPHORUS_CFLAGS)
 dnl
 dnl output phase
 dnl
-AC_CONFIG_FILES([Makefile src/Makefile data/Makefile data/phosphorus.desktop data/icons/Makefile po/Makefile.in])
+AC_CONFIG_FILES([Makefile src/Makefile data/Makefile data/phosphorus.desktop data/icons/Makefile])
 AC_OUTPUT
 
 echo ""

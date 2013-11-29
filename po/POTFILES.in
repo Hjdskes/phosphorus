@@ -1,7 +1,0 @@
-# List of source files containing translatable strings.
-
-data/phosphorus.desktop.in
-src/ui.c
-src/callbacks.c
-
-

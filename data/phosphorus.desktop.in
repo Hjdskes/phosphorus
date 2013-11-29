@@ -1,11 +1,9 @@
 [Desktop Entry]
 Type=Application
-Name=@PACKAGE_NAME@
-GenericName=A simple wallpaper setter.
-GenericName[nl]=Een simpele achtergrond-insteller.
-Comment=Choose an image and set it as wallpaper.
-Comment[nl]=Kies een afbeelding en stel deze in als achtergrond.
+_Name=Phosphorus
+_GenericName=A simple wallpaper setter.
+_Comment=Choose an image and set it as wallpaper.
 Icon=preferences-wallpaper
 Terminal=false
-Exec=@PACKAGE@
+Exec=phosphorus
 Categories=GNOME;GTK;Utilies;
