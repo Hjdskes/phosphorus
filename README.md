@@ -51,6 +51,7 @@ ToDo
  * create/use existing cache for thumbs
  * support multi-monitors / Xinerama
  * support more cmdline parameters a là Nitrogen
+ * update Swedish translation
 
 Bugs
 ----
