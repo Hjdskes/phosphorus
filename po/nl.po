@@ -7,9 +7,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
-"Report-Msgid-Bugs-To: <jthidskes@outlook.com>\n"
-"POT-Creation-Date: 2013-11-29 17:58+0100\n"
-"PO-Revision-Date: 2013-11-29 17:58+0100\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-11-29 21:20+0100\n"
+"PO-Revision-Date: 2013-11-29 21:27+0100\n"
 "Last-Translator: Jente Hidskes <jthidskes@outlook.com>\n"
 "Language-Team: Dutch <LL@li.org>\n"
 "Language: Dutch\n"
@@ -18,26 +18,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: ../data/phosphorus.desktop.in.h:1
-msgid "A simple wallpaper setter."
-msgstr "Een simpele achtergrond insteller."
+#, fuzzy
+msgid "A simple wallpaper browser and setter."
+msgstr "Een simpele achtergrond browser en insteller."
 
 #: ../data/phosphorus.desktop.in.h:2
 msgid "Choose an image and set it as wallpaper."
 msgstr "Kies een afbeelding en stel deze in als achtergrond."
 
-#: ../src/callbacks.c:72
+#: ../src/callbacks.c:71
 msgid "Pick a directory"
 msgstr "Kies een map"
 
-#: ../src/callbacks.c:73 ../src/ui.c:80
+#: ../src/callbacks.c:72 ../src/ui.c:79
 msgid "Cancel"
 msgstr "Annuleren"
 
-#: ../src/callbacks.c:74
+#: ../src/callbacks.c:73
 msgid "Open"
 msgstr "Openen"
 
-#: ../src/ui.c:34
+#: ../src/ui.c:33
 msgid ""
 "Phosphorus is free software: you can redistribute it and/or modify it under "
 "the terms of the GNU General Public License as published by the Free "
@@ -45,7 +46,7 @@ msgid ""
 "any later version."
 msgstr ""
 
-#: ../src/ui.c:38
+#: ../src/ui.c:37
 msgid ""
 "Phosphorus is distributed in the hope that it will be useful but WITHOUT ANY "
 "WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS "
@@ -53,80 +54,81 @@ msgid ""
 "details."
 msgstr ""
 
-#: ../src/ui.c:42
+#: ../src/ui.c:41
 msgid ""
 "You should have received a copy of the GNU General Public License along with "
 "this program. If not, see http://www.gnu.org/licenses/."
 msgstr ""
 
-#: ../src/ui.c:53
-msgid "A simple wallpaper setter"
-msgstr "Een simpele achtergrond insteller"
+#: ../src/ui.c:52
+#, fuzzy
+msgid "A simple wallpaper browser and setter"
+msgstr "Een simpele achtergrond browser en insteller"
 
-#: ../src/ui.c:58
+#: ../src/ui.c:57
 msgid "translator-credits"
 msgstr "Jente Hidskes"
 
-#: ../src/ui.c:59
+#: ../src/ui.c:58
 msgid "Website"
 msgstr "Webpagina"
 
-#: ../src/ui.c:79 ../src/ui.c:172
+#: ../src/ui.c:78 ../src/ui.c:171
 msgid "Preferences"
 msgstr "Voorkeuren"
 
-#: ../src/ui.c:80
+#: ../src/ui.c:79
 msgid "Ok"
 msgstr "Ok"
 
-#: ../src/ui.c:87
+#: ../src/ui.c:86
 msgid "Directories"
 msgstr "Mappen"
 
-#: ../src/ui.c:103
+#: ../src/ui.c:102
 msgid "Directory"
 msgstr "Map"
 
-#: ../src/ui.c:112
+#: ../src/ui.c:111
 msgid "Add"
 msgstr "Toevoegen"
 
-#: ../src/ui.c:113
+#: ../src/ui.c:112
 msgid "Remove"
 msgstr "Verwijderen"
 
-#: ../src/ui.c:171
+#: ../src/ui.c:170
 msgid "About"
 msgstr "Over"
 
-#: ../src/ui.c:173
+#: ../src/ui.c:172
 msgid "Apply"
 msgstr "Toepassen"
 
-#: ../src/ui.c:174
+#: ../src/ui.c:173
 msgid "Exit"
 msgstr "Afsluiten"
 
-#: ../src/ui.c:190
+#: ../src/ui.c:189
 msgid "Automatic"
 msgstr "Automatisch"
 
-#: ../src/ui.c:193 ../src/ui.c:195
+#: ../src/ui.c:192 ../src/ui.c:194
 msgid "Scaled"
 msgstr "Geschaald"
 
-#: ../src/ui.c:201 ../src/ui.c:203
+#: ../src/ui.c:200 ../src/ui.c:202
 msgid "Centered"
 msgstr "Gecentreerd"
 
-#: ../src/ui.c:209 ../src/ui.c:211
+#: ../src/ui.c:208 ../src/ui.c:210
 msgid "Tiled"
 msgstr "Getegeld"
 
-#: ../src/ui.c:217 ../src/ui.c:219
+#: ../src/ui.c:216 ../src/ui.c:218
 msgid "Zoomed"
 msgstr "Gezoomd"
 
-#: ../src/ui.c:225 ../src/ui.c:227
+#: ../src/ui.c:224 ../src/ui.c:226
 msgid "Zoomed Fill"
 msgstr "Gezoomd Vullen"
