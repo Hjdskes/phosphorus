@@ -11,13 +11,20 @@ dnl shopping list
 dnl
 AC_PROG_CC
 PKG_PROG_PKG_CONFIG
+IT_PROG_INTLTOOL([0.35.0])
+
+GETTEXT_PACKAGE=phosphorus
+AC_SUBST(GETTEXT_PACKAGE)
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [GETTEXT package name])
+
+AM_GLIB_GNU_GETTEXT
+LT_INIT
 
 GDK_PIXBUF_VERSION=2.26.1
 GTK3_VERSION=3.4.2
 
 AC_SUBST(GDK_PIXBUF_VERSION)
 AC_SUBST(GTK3_VERSION)
-
 PKG_CHECK_MODULES(GTK3,[gtk+-3.0 >= $GTK3_VERSION])
 PKG_CHECK_MODULES(GDK_PIXBUF,[gdk-pixbuf-xlib-2.0 >= $GDK_PIXBUF_VERSION])
 
@@ -30,11 +37,12 @@ PHOSPHORUS_CFLAGS="-std=c99 -Wextra -Wno-unused-parameter $PHOSPHORUS_CFLAGS"
 
 AC_SUBST(PHOSPHORUS_LIBS)
 AC_SUBST(PHOSPHORUS_CFLAGS)
+
 dnl
 dnl output phase
 dnl
-AC_CONFIG_FILES([Makefile src/Makefile data/Makefile data/phosphorus.desktop data/icons/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile data/Makefile data/phosphorus.desktop data/icons/Makefile po/Makefile.in])
 AC_OUTPUT
 
 echo ""
-echo "You can now type \"make\" to compile Phosphorus"
+echo "You can now type \"make\" to compile phosphorus"
