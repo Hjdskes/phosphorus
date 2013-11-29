@@ -188,7 +188,7 @@ GtkWidget *create_window (GtkListStore *store) {
 		g_clear_error (&err);
 	}
 	gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, generic_icon, 1, _("Automatic"), -1);
-	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-scaled-16", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
+	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-scaled", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
 	if (!err)
 		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, icon, 1, _("Scaled"), -1);
 	else {
@@ -196,7 +196,7 @@ GtkWidget *create_window (GtkListStore *store) {
 		g_fprintf (stderr, "%s\n", err->message);
 		g_clear_error (&err);
 	}
-	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-centered-16", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
+	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-centered", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
 	if (!err)
 		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, icon, 1, _("Centered"), -1);
 	else {
@@ -204,7 +204,7 @@ GtkWidget *create_window (GtkListStore *store) {
 		g_fprintf (stderr, "%s\n", err->message);
 		g_clear_error (&err);
 	}
-	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-tiled-16", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
+	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-tiled", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
 	if (!err)
 		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, icon, 1, _("Tiled"), -1);
 	else {
@@ -212,7 +212,7 @@ GtkWidget *create_window (GtkListStore *store) {
 		g_fprintf (stderr, "%s\n", err->message);
 		g_clear_error (&err);
 	}
-	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-zoomed-16", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
+	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-zoomed", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
 	if (!err)
 		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, icon, 1, _("Zoomed"), -1);
 	else {
@@ -220,7 +220,7 @@ GtkWidget *create_window (GtkListStore *store) {
 		g_fprintf (stderr, "%s\n", err->message);
 		g_clear_error (&err);
 	}
-	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-zoomed-16", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
+	icon = gtk_icon_theme_load_icon (icon_theme, "wallpaper-zoomed", 16, GTK_ICON_LOOKUP_NO_SVG, &err);
 	if (!err)
 		gtk_list_store_insert_with_values (wp_modes, NULL, -1, 0, icon, 1, _("Zoomed Fill"), -1);
 	else {
