@@ -1,11 +1,12 @@
 Phosphorus
 =========
 
-**A simple GTK3 clone of Nitrogen.**
+**A simple wallpaper browser and setter**
 
-Phosphorus is a simple clone of Nitrogen, written in C with GTK3. Currently, it has less features and
-does not even set your wallpaper correctly. This means that you probably do not want to use this on a
-production system yet (as far as setting a background there is important, but you know what I mean).
+Phosphorus is a simple wallpaper browser and setter. Consider it a GTK3 clone of Nitrogen.
+Currently, it has less features and it not yet released as stable. 
+This means that you probably do not want to use this on a production system yet
+(as far as setting a background there is important, but you know what I mean).
 
 Installation
 ------------
@@ -16,6 +17,8 @@ On Arch Linux, these are `gdk-pixbuf2` and `gtk3`.
 
 Once those dependencies are installed, just run these commands to build and install Phosphorus:
 
+    $ autoreconf -i
+    $ ./configure
     $ make
     # make install
     (Optionally) $ make clean
@@ -25,8 +28,8 @@ Bugs
 
 For any bug or request [fill an issue][bug] on [GitHub][ghp].
 
-  [bug]: https://github.com/Unia/gwallpaper/issues
-  [ghp]: https://github.com/Unia/gwallpaper
+  [bug]: https://github.com/Unia/phosphorus/issues
+  [ghp]: https://github.com/Unia/phosphorus
 
 License
 -------
