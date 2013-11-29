@@ -45,6 +45,13 @@ Then, make the necessary changes and overwrite the old .po file:
 
 	$ mv <language code>2.po <language code>.po
 
+ToDo
+----
+
+ * create/use existing cache for thumbs
+ * support multi-monitors / Xinerama
+ * support more cmdline parameters a là Nitrogen
+
 Bugs
 ----
 

@@ -17,12 +17,6 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* TODO:
- * create/use existing cache for thumbs
- * support multi-monitors / Xinerama
- * support more cmdline parameters a là Nitrogen
- */
-
 #include <stdlib.h>
 #include <string.h>
 #include <gtk/gtk.h>
