@@ -84,7 +84,7 @@ static void load_wallpapers (GtkListStore *store) {
 
 	GtkTreeIter it;
 	GError *err = NULL;
-	//wallpapers = g_slist_sort (wallpapers, (GCompareFunc) strcmp);
+	//wallpapers = g_slist_sort (wallpapers, (GCompareFunc) strcmp); //FIXME: do we need this?
 	for (GSList *l = wallpapers; l; l = l->next) {
 		GdkPixbuf *wp;
 		wp = gdk_pixbuf_new_from_file ((char *)l->data, &err);

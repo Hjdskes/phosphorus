@@ -68,12 +68,10 @@ static void on_about_button_clicked (GtkButton *button, gpointer user_data) {
 
 GtkWidget *prefs_dialog_open (GtkWindow *parent) {
 	GtkWidget *prefs_dialog, *content_area, *dirs_label, *scroll, *tree, *button_box, *add_button, *remove_button;
-	GtkListStore *liststore;
 	GtkTreeSelection *selection;
 	GtkCellRenderer *renderer;
 	GtkTreeViewColumn *column;
 	GtkTreeIter iter;
-	char **d;
 
 	prefs_dialog = gtk_dialog_new_with_buttons (_("Preferences"), parent, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			_("Cancel"), GTK_RESPONSE_REJECT, _("Ok"), GTK_RESPONSE_ACCEPT, NULL);
@@ -92,9 +90,9 @@ GtkWidget *prefs_dialog_open (GtkWindow *parent) {
 	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scroll), GTK_SHADOW_IN);
 	gtk_widget_set_vexpand (scroll, TRUE);
 
-	liststore = gtk_list_store_new (1, G_TYPE_STRING);
-	tree = gtk_tree_view_new_with_model (GTK_TREE_MODEL (liststore));
-	g_object_unref (liststore);
+	prefs_liststore = gtk_list_store_new (1, G_TYPE_STRING);
+	tree = gtk_tree_view_new_with_model (GTK_TREE_MODEL (prefs_liststore));
+	g_object_unref (prefs_liststore);
 	gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (tree), FALSE);
 	selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (tree));
 	gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
@@ -103,7 +101,7 @@ GtkWidget *prefs_dialog_open (GtkWindow *parent) {
 	gtk_tree_view_append_column (GTK_TREE_VIEW (tree), column);
 
 	for (GSList *l = cfg.dirs; l; l = l->next) {
-		gtk_list_store_insert_with_values (liststore, &iter, -1, 0, (char *)l->data, -1);
+		gtk_list_store_insert_with_values (prefs_liststore, &iter, -1, 0, (char *)l->data, -1);
 	}
 
 	button_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);

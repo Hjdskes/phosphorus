@@ -58,6 +58,7 @@ struct _configuration {
 };
 
 GtkWidget *icon_view;
+GtkListStore *prefs_liststore;
 extern xconnection xcon;
 extern configuration cfg;
 

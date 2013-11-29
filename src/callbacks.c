@@ -50,31 +50,36 @@ void on_prefs_dlg_rmv_btn_clicked (GtkButton *button, gpointer user_data) {
 	GtkTreeModel *model;
 	GtkTreeIter iter;
 
-	cfg.config_changed = 1;
 	if (gtk_tree_selection_get_selected (selection, &model, &iter)) {
-		const char *filename;
+		const char *filename = NULL;
 
 		gtk_tree_model_get (model, &iter, 0, &filename, -1);
 		for (GSList *l = cfg.dirs; l; l = l->next) {
-			if (g_strcmp0 (filename, (char *)l->data) == 0) //FIXME
+			if (g_strcmp0 (filename, (char *)l->data) == 0) {
 				cfg.dirs = g_slist_remove (cfg.dirs, l->data);
+				cfg.config_changed = 1;
+			}
 		}
+		gtk_tree_selection_select_iter (selection, &iter);
+		gtk_list_store_remove (prefs_liststore, &iter);
 	} else
-		g_fprintf (stderr, "Error: can't get selected directory to delete.\n");
+		g_fprintf (stderr, "Error: can't get selected directory to delete from tree view.\n");
 }
 
 void on_prefs_dlg_add_btn_clicked (GtkButton *button, gpointer user_data) {
 	GtkWidget *dialog;
+	GtkTreeIter iter;
 
-	cfg.config_changed = 1;
 	dialog = gtk_file_chooser_dialog_new (_("Pick a directory"), (GtkWindow *) user_data,
 			GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("Cancel"), GTK_RESPONSE_CANCEL,
 			_("Open"), GTK_RESPONSE_ACCEPT, NULL);
 	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
 		char *filename;
 
+		cfg.config_changed = 1;
 		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
 		cfg.dirs = g_slist_append (cfg.dirs, g_strdup (filename));
+		gtk_list_store_insert_with_values (prefs_liststore, &iter, -1, 0, filename, -1);
 		g_free (filename);
 	}
 
@@ -89,11 +94,12 @@ void on_prefs_button_clicked (GtkButton *button, gpointer user_data) {
 	result = gtk_dialog_run (GTK_DIALOG (dialog));
 	switch (result) {
 		case GTK_RESPONSE_OK:
-			//reload config and images?
+			//FIXME: reload config and images?
 		case GTK_RESPONSE_CANCEL:
 		default:
 			break;
 	}
+
 	gtk_widget_destroy (dialog);
 }
 
