@@ -17,11 +17,33 @@ On Arch Linux, these are `gdk-pixbuf2` and `gtk3`.
 
 Once those dependencies are installed, just run these commands to build and install Phosphorus:
 
-    $ autoreconf -i
+    $ ./autogen
     $ ./configure
     $ make
     # make install
     (Optionally) $ make clean
+
+Translations
+-----------
+
+You can help translate Phosphorus in your language!
+To do so, simply follow these steps:
+
+	$ cd po
+	$ intltool-update --pot
+	$ mv phosphorus.pot <language code>.po
+
+Where `<language code>` is, obviously, the code of your language (e.g. `nl` for Dutch, `fr` for French, `en` for English...)
+Edit the `LINGUAS` file and add your language code. Please keep the list alphabetically.
+Lastly, open the .po file you just generated and translate all the strings. Don't forget to fill in the information in the header!
+
+When a translation needs updating, firstly create the `phosphorus.pot` file as explained above, then run the following: 
+
+	$ intltool-update --dist --gettext-package=phosphorus --output-file=<language code>2.po <language code>
+
+Then, make the necessary changes and overwrite the old .po file:
+
+	$ mv <language code>2.po <language code>.po
 
 Bugs
 ----
