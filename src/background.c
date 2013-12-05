@@ -22,7 +22,7 @@
 
 #include "phosphorus.h"
 
-static int get_best_mode (GdkPixbuf *base, int win_w, int win_h) {
+static int get_best_mode (GdkPixbuf *base, const int win_w, const int win_h) {
 	int mode = WP_ZOOMED;
 	float ratio = ((float)gdk_pixbuf_get_width (base)) / ((float)gdk_pixbuf_get_height (base));
 
@@ -41,7 +41,7 @@ static int get_best_mode (GdkPixbuf *base, int win_w, int win_h) {
 	return mode;
 }
 
-static GdkPixbuf *pixbuf_make_scaled (GdkPixbuf *base, int win_w, int win_h) {
+static GdkPixbuf *pixbuf_make_scaled (GdkPixbuf *base, const int win_w, const int win_h) {
 	GdkPixbuf *out;
 
 	out = gdk_pixbuf_scale_simple (base, win_w, win_h, GDK_INTERP_BILINEAR);
@@ -50,7 +50,7 @@ static GdkPixbuf *pixbuf_make_scaled (GdkPixbuf *base, int win_w, int win_h) {
 	return out;
 }
 
-static GdkPixbuf *pixbuf_make_centered (GdkPixbuf *base, int win_w, int win_h) {
+static GdkPixbuf *pixbuf_make_centered (GdkPixbuf *base, const int win_w, const int win_h) {
 	GdkPixbuf *out;
 	int dest_x = (win_w - gdk_pixbuf_get_width (base)) >> 1;
 	int dest_y = (win_h - gdk_pixbuf_get_height (base)) >> 1;
@@ -80,7 +80,7 @@ static GdkPixbuf *pixbuf_make_centered (GdkPixbuf *base, int win_w, int win_h) {
 	return out;
 }
 
-static GdkPixbuf *pixbuf_make_tiled (GdkPixbuf *base, int win_w, int win_h) {
+static GdkPixbuf *pixbuf_make_tiled (GdkPixbuf *base, const int win_w, const int win_h) {
 	GdkPixbuf *out;
 	int count = 0;
 	int src_w = gdk_pixbuf_get_width (base);
@@ -109,7 +109,7 @@ static GdkPixbuf *pixbuf_make_tiled (GdkPixbuf *base, int win_w, int win_h) {
 	return out;
 }
 
-static GdkPixbuf *pixbuf_make_zoom (GdkPixbuf *base, int win_w, int win_h) {
+static GdkPixbuf *pixbuf_make_zoom (GdkPixbuf *base, const int win_w, const int win_h) {
 	GdkPixbuf *out, *temp;
 	int x = 0, y = 0, res_x, res_y;
 
@@ -121,12 +121,12 @@ static GdkPixbuf *pixbuf_make_zoom (GdkPixbuf *base, int win_w, int win_h) {
 	   does not exceed the root window height */
 	if (src_w > src_h && ((float)src_w / (float)src_h) > ((float)win_w / (float)win_h)) {
 		res_x = win_w;
-		res_y = (int)(((float)(gdk_pixbuf_get_height (base) * res_x)) / (float)gdk_pixbuf_get_width (base));
+		res_y = (int)ceil (((float)(gdk_pixbuf_get_height (base) * res_x)) / (float)gdk_pixbuf_get_width (base));
 		x = 0;
 		y = (win_h - res_y) >> 1;
 	} else {
 		res_y = win_h;
-		res_x = (int)(((float)(gdk_pixbuf_get_width (base) * res_y)) / (float)gdk_pixbuf_get_height (base));
+		res_x = (int)ceil (((float)(gdk_pixbuf_get_width (base) * res_y)) / (float)gdk_pixbuf_get_height (base));
 		y = 0;
 		x = (win_w - res_x) >> 1;
 	}
@@ -154,7 +154,7 @@ static GdkPixbuf *pixbuf_make_zoom (GdkPixbuf *base, int win_w, int win_h) {
 	return out;
 }
 
-static GdkPixbuf *pixbuf_make_zoom_fill (GdkPixbuf *base, int win_w, int win_h) {
+static GdkPixbuf *pixbuf_make_zoom_fill (GdkPixbuf *base, const int win_w, const int win_h) {
 	GdkPixbuf *out, *temp;
 	int x, y, w, h;
 
@@ -222,7 +222,7 @@ int set_background (void) {
 		case WP_TILED: //FIXME: does not work correctly
 			outpix = pixbuf_make_tiled (pix, win_w, win_h);
 			break;
-		case WP_ZOOMED: //FIXME: leaves one pixel width line on the right
+		case WP_ZOOMED:
 			outpix = pixbuf_make_zoom (pix, win_w, win_h);
 			break;
 		case WP_ZOOMED_FILL:
