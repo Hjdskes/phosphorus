@@ -52,6 +52,10 @@ ToDo
  * support multi-monitors / Xinerama
  * support more cmdline parameters a là Nitrogen
  * update Swedish translation
+ * reload all images upon removing/adding a directory?
+ * support for inotify like Nitrogen?
+ * support for sorting images like Nitrogen?
+ * pass program version from autotools to code instead of defining it
 
 Bugs
 ----

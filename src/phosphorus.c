@@ -230,7 +230,7 @@ static int get_options (int argc, char **argv) {
 		load_config (config_file);
 		g_free ((gpointer) config_file);
 		int res = set_background ();
-		g_slist_free_full (cfg.dirs, (GDestroyNotify) gtk_tree_path_free);
+		g_slist_free_full (cfg.dirs, (GDestroyNotify) g_free);
 		XCloseDisplay (xcon.dpy);
 		if (res == -1) {
 			g_fprintf (stderr, "Applying background failed.\n");
@@ -284,7 +284,7 @@ int main (int argc, char **argv) {
 		save_config (config_file);
 
 	g_free ((gpointer) config_file);
-	//g_slist_free_full (cfg.dirs, (GDestroyNotify) gtk_tree_path_free); //FIXME: causes segfault
+	g_slist_free_full (cfg.dirs, (GDestroyNotify) g_free);
 	XCloseDisplay (xcon.dpy);
 	return 0;
 }
