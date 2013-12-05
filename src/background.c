@@ -82,7 +82,7 @@ static GdkPixbuf *pixbuf_make_centered (GdkPixbuf *base, const int win_w, const 
 
 static GdkPixbuf *pixbuf_make_tiled (GdkPixbuf *base, const int win_w, const int win_h) {
 	GdkPixbuf *out;
-	int count = 0;
+	int count;
 	int src_w = gdk_pixbuf_get_width (base);
 	int src_h = gdk_pixbuf_get_height (base);
 
@@ -101,7 +101,7 @@ static GdkPixbuf *pixbuf_make_tiled (GdkPixbuf *base, const int win_w, const int
 	/* start at 1 because the first real (0) iteration is already done from before
 	   (it's the source of our copy!) */
 	for (count = 1; count < iterations; count++) {
-		gdk_pixbuf_copy_area (base, 0, 0, src_w, ((count + 1) * src_h) > win_h ? src_h -
+		gdk_pixbuf_copy_area (out, 0, 0, win_w, ((count + 1) * src_h) > win_h ? src_h -
 				(((count + 1) * src_h) - win_h) : src_h, out, 0, count * src_h);
 	}
 
@@ -219,7 +219,7 @@ int set_background (void) {
 		case WP_CENTERED:
 			outpix = pixbuf_make_centered (pix, win_w, win_h);
 			break;
-		case WP_TILED: //FIXME: does not work correctly
+		case WP_TILED:
 			outpix = pixbuf_make_tiled (pix, win_w, win_h);
 			break;
 		case WP_ZOOMED:
