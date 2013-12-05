@@ -2,6 +2,7 @@
 /*
  * background.c
  * Copyright (C) 2013 Jente Hidskes <jthidskes@outlook.com>
+ * Copyright (C) 2013 Dave Foster <dave.foster@gmail.com>
  *
  * Phosphorus is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

@@ -15,6 +15,10 @@
  *
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Icons are licensed under a Creative Commons Attribution-Share Alike license.
+ * Copyright (C) 2013 Craig Duquette.
+ * See http://creativecommons.org/licenses/by-sa/3.0
  */
 
 #include <gtk/gtk.h>
