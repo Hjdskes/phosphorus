@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
 Name=Phosphorus
-_GenericName=A simple wallpaper browser and setter.
-_Comment=Choose an image and set it as wallpaper.
+_GenericName=A simple wallpaper browser and setter
+_Comment=Choose an image and set it as wallpaper
 Icon=preferences-wallpaper
 Terminal=false
 Exec=phosphorus
