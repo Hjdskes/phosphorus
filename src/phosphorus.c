@@ -2,7 +2,8 @@
 /*
  * phosphorus.c
  * Copyright (C) 2013 Jente Hidskes <jthidskes@outlook.com>
- * Copyright (C) 2013 PCMan for the image loading parts, taken from LXappearance
+ * Copyright (C) 2013 PCMan <pcman.tw@gmail.com> for the image loading parts,
+ *                    taken from LXappearance
  *
  * Phosphorus is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

@@ -2,6 +2,7 @@
 /*
  * ui.c
  * Copyright (C) 2013 Jente Hidskes <jthidskes@outlook.com>
+ * Copyright (C) 2013 Javeed Shaikh <syscrash2k@gmail.com>
  *
  * Phosphorus is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,7 +18,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Icons are licensed under a Creative Commons Attribution-Share Alike license.
- * Copyright (C) 2013 Craig Duquette.
+ * Copyright (C) 2013 Craig Duquette <cduquette@gmail.com>
  * See http://creativecommons.org/licenses/by-sa/3.0
  */
 
