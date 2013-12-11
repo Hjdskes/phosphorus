@@ -53,7 +53,6 @@ ToDo
  * support more cmdline parameters a là Nitrogen
  * reload all images upon removing/adding a directory?
  * support for inotify like Nitrogen?
- * support for sorting images like Nitrogen?
  * pass program version from autotools to code instead of defining it
 
 Bugs

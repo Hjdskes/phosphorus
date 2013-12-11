@@ -32,6 +32,7 @@ configuration cfg = {
 	NULL,
 	0,
 	0,
+	0,
 	{ .0, .0, .0, 1.0 }
 };
 
@@ -76,6 +77,8 @@ static GSList *load_wallpapers_in_dir (const char *wp_dir, GSList *wallpapers) {
 
 static void load_wallpapers (GtkListStore *store) {
 	char **d;
+	GtkTreeIter it;
+	GError *err = NULL;
 	GSList *wallpapers = NULL;
 	GtkTreeIter sel_it = {0};
 
@@ -84,9 +87,23 @@ static void load_wallpapers (GtkListStore *store) {
 		wallpapers = load_wallpapers_in_dir ((char *)l->data, wallpapers);
 	}
 
-	GtkTreeIter it;
-	GError *err = NULL;
-	//wallpapers = g_slist_sort (wallpapers, (GCompareFunc) strcmp); //FIXME: do we need this?
+	switch (cfg.sort) {
+		case SORT_ALPHA:
+			wallpapers = g_slist_sort (wallpapers, (GCompareFunc) strcmp);
+			break;
+		case SORT_RALPHA:
+			wallpapers = g_slist_sort (wallpapers, (GCompareFunc) strcmp);
+			wallpapers = g_slist_reverse (wallpapers);
+			break;
+		case SORT_TIME:     //FIXME: implement?
+			g_fprintf (stderr, "Error: not implemented yet. Will use SORT_NONE for now.\n");
+		case SORT_RTIME:    //FIXME: implement?
+			g_fprintf (stderr, "Error: not implemented yet. Will use SORT_NONE for now.\n");
+		case SORT_NONE:
+		default:
+			break;
+	}
+
 	for (GSList *l = wallpapers; l; l = l->next) {
 		GdkPixbuf *wp;
 		wp = gdk_pixbuf_new_from_file ((char *)l->data, &err);
@@ -142,7 +159,7 @@ static int save_config (const char *path) {
 
 	content = g_string_sized_new (512);
 	g_string_append_printf (content, "[Wallpaper]\nset_wp = %s\ncolor = %s\nwp_mode = %d\n\n"
-			"[Config]\ndirs = ", cfg.set_wp, hex_value (&cfg.bg_color), cfg.wp_mode);
+			"[Config]\nsort = %d\ndirs = ", cfg.set_wp, hex_value (&cfg.bg_color), cfg.wp_mode, cfg.sort);
 	for (GSList *l = cfg.dirs; l; l = l->next) {
 		g_string_append_printf (content, "%s;", (char *)l->data);
 	}
@@ -172,6 +189,7 @@ static int load_config (const char *path) {
 		cfg.set_wp = g_key_file_get_string (config, "Wallpaper", "set_wp", &err);
 		cfg.wp_mode = g_key_file_get_integer (config, "Wallpaper", "wp_mode", &err);
 		color = g_key_file_get_string (config, "Wallpaper", "color", &err);
+		cfg.sort = g_key_file_get_integer (config, "Config", "sort", &err);
 		dirs = g_key_file_get_string_list (config, "Config", "dirs", NULL, &err);
 		g_key_file_free (config);
 		if (err) {
@@ -198,11 +216,16 @@ static int get_options (int argc, char **argv) {
 	GError *err = NULL;
 	gboolean restore_background = FALSE;
 	gboolean display_version = FALSE;
+	gboolean sort_backgrounds = FALSE;
+	char *sort_mode;
 
 	GOptionEntry option_entries[] = {
-		{ "version",  'v', 0, G_OPTION_ARG_NONE, &display_version, "Display version and exit", 
-				NULL },
+		{ "version",  'v', 0, G_OPTION_ARG_NONE, &display_version, "Display version and exit", NULL },
 		{ "restore",  'r', 0, G_OPTION_ARG_NONE, &restore_background, "Restore set wallpaper and exit", NULL },
+		{ "sort", 's', 0, G_OPTION_ARG_STRING, &sort_mode, "How to sort the images. Defaults to no sorting; images get added as the directory is scanned.\
+		\n\t\t\t     Valid options are:\
+		\n\t* alpha, for alphanumeric sort\n\t* ralpha, for reverse alphanumeric sort\n\t* time, for last modified time sort (oldest first)\
+		\n\t* rtime, for reverse last modified time sort (newest first)", NULL },
 		{ NULL },
 	};
 
@@ -224,14 +247,8 @@ static int get_options (int argc, char **argv) {
 	}
 
 	if (restore_background == TRUE) {
-		const char *config_dir;
-		const char *config_file;
-
-		config_dir = g_get_user_config_dir ();
-		config_file = g_build_filename (config_dir, "phosphorus/config.cfg", NULL);
-		load_config (config_file);
-		g_free ((gpointer) config_file);
 		int res = set_background ();
+		//FIXME: g_free ((gpointer) config_file);
 		g_slist_free_full (cfg.dirs, (GDestroyNotify) g_free);
 		XCloseDisplay (xcon.dpy);
 		if (res == -1) {
@@ -240,6 +257,18 @@ static int get_options (int argc, char **argv) {
 		} else
 			return 1;
 	}
+
+	if (g_strcmp0 (sort_mode, "alpha") == 0)
+		cfg.sort = 1;
+	else if (g_strcmp0 (sort_mode, "ralpha") == 0)
+		cfg.sort = 2;
+	else if (g_strcmp0 (sort_mode, "time") == 0)
+		g_fprintf (stderr, "Error: not implemented yet. Will use SORT_NONE for now.\n");
+		//cfg.sort = 3;
+	else if (g_strcmp0 (sort_mode, "rtime") == 0)
+		g_fprintf (stderr, "Error: not implemented yet. Will use SORT_NONE for now.\n");
+		//cfg.sort = 4;
+	else {}	/*silently fail and do nothing, cfg.sort is already initialized to 0.*/
 
 	return 0;
 }
@@ -264,12 +293,12 @@ int main (int argc, char **argv) {
 	xcon.root = RootWindow (xcon.dpy, xcon.screen_num);
 	gdk_pixbuf_xlib_init (xcon.dpy, xcon.screen_num);
 
-	if ((option = get_options (argc, argv) != 0))
-		return option < 0 ? -1 : 0;
-
 	config_dir = g_get_user_config_dir ();
 	config_file = g_build_filename (config_dir, "phosphorus/config.cfg", NULL);
 	load_config (config_file);
+
+	if ((option = get_options (argc, argv) != 0))
+		return option < 0 ? -1 : 0;
 
 	gtk_init (&argc, &argv);
 

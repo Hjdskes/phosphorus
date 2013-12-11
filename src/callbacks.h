@@ -23,6 +23,7 @@
 G_BEGIN_DECLS
 
 void on_apply_button_clicked (GtkButton *button, gpointer user_data);
+void on_radio_button_clicked (GtkToggleButton *button, gpointer user_data);
 void on_prefs_dlg_rmv_btn_clicked (GtkButton *button, gpointer user_data);
 void on_prefs_dlg_add_btn_clicked (GtkButton *button, gpointer user_data);
 void on_prefs_button_clicked (GtkButton *button, gpointer user_data);

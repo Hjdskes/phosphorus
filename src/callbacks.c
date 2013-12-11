@@ -45,6 +45,17 @@ void on_apply_button_clicked (GtkButton *button, gpointer user_data) {
 		g_fprintf (stderr, "Error: applying background failed.\n");
 }
 
+void on_radio_button_clicked (GtkToggleButton *button, gpointer user_data) {
+	if (gtk_toggle_button_get_active (button) == TRUE) {
+		unsigned int mode = GPOINTER_TO_INT(user_data);
+
+		if (cfg.sort != mode) {
+			cfg.sort = mode;
+			cfg.config_changed = 1;
+		}
+	}
+}
+
 void on_prefs_dlg_rmv_btn_clicked (GtkButton *button, gpointer user_data) {
 	GtkTreeSelection *selection = (GtkTreeSelection *)user_data;
 	GtkTreeModel *model;
@@ -90,7 +101,7 @@ void on_prefs_button_clicked (GtkButton *button, gpointer user_data) {
 	GtkWidget *dialog;
 	int result;
 
-	dialog = prefs_dialog_open ((GtkWindow *) user_data);
+	dialog = prefs_dialog_open ((GtkWindow *) user_data, cfg.sort);
 	result = gtk_dialog_run (GTK_DIALOG (dialog));
 	switch (result) {
 		case GTK_RESPONSE_OK:

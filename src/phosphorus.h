@@ -41,6 +41,14 @@ enum {
 	WP_ZOOMED_FILL
 };
 
+enum {
+	SORT_NONE = 0,
+	SORT_ALPHA,
+	SORT_RALPHA,
+	SORT_TIME,
+	SORT_RTIME,
+};
+
 typedef struct _xconnection	xconnection;
 struct _xconnection {
 	Display *dpy;
@@ -54,6 +62,7 @@ struct _configuration {
 	const char  *set_wp;
 	unsigned int wp_mode;
 	unsigned int config_changed;
+	unsigned int sort;
 	GdkRGBA      bg_color;
 };
 

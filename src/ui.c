@@ -71,8 +71,10 @@ static void on_about_button_clicked (GtkButton *button, gpointer user_data) {
 	g_free (license_trans);
 }
 
-GtkWidget *prefs_dialog_open (GtkWindow *parent) {
-	GtkWidget *prefs_dialog, *content_area, *dirs_label, *scroll, *tree, *button_box, *add_button, *remove_button;
+GtkWidget *prefs_dialog_open (GtkWindow *parent, unsigned int mode) {
+	GtkWidget *prefs_dialog, *content_area, *sort_label, *radio_none, *radio_alpha, *radio_ralpha, *radio_time, *radio_rtime;
+	GtkWidget *dirs_label, *scroll, *tree, *button_box, *add_button, *remove_button;
+	GSList *radio_group;
 	GtkTreeSelection *selection;
 	GtkCellRenderer *renderer;
 	GtkTreeViewColumn *column;
@@ -85,6 +87,36 @@ GtkWidget *prefs_dialog_open (GtkWindow *parent) {
 	gtk_dialog_set_default_response (GTK_DIALOG (prefs_dialog), GTK_RESPONSE_REJECT);
 	gtk_dialog_set_response_sensitive (GTK_DIALOG (prefs_dialog), GTK_RESPONSE_REJECT, TRUE);
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (prefs_dialog));
+
+	sort_label = gtk_label_new (_("Image sorting"));
+	gtk_label_set_justify (GTK_LABEL (sort_label), GTK_JUSTIFY_CENTER);
+	gtk_label_set_line_wrap (GTK_LABEL (sort_label), TRUE);
+
+	radio_none = gtk_radio_button_new_with_label (NULL, _("None"));
+	radio_alpha = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio_none), _("Alphanumeric"));
+	radio_ralpha = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio_none), _("Reversed alphanumeric"));
+	radio_time = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio_none), _("Oldest first"));
+	radio_rtime = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio_none), _("Newest first"));
+
+	switch (mode) {
+		case 0:
+			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (radio_none), TRUE);
+			break;
+		case 1:
+			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (radio_alpha), TRUE);
+			break;
+		case 2:
+			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (radio_ralpha), TRUE);
+			break;
+		case 3:
+			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (radio_time), TRUE);
+			break;
+		case 4:
+			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (radio_rtime), TRUE);
+			break;
+		default:
+			g_fprintf (stderr, "Error: can not determine sort mode.\n");
+	}
 
 	dirs_label = gtk_label_new (_("Directories"));
 	gtk_label_set_justify (GTK_LABEL (dirs_label), GTK_JUSTIFY_CENTER);
@@ -114,9 +146,20 @@ GtkWidget *prefs_dialog_open (GtkWindow *parent) {
 	add_button = gtk_button_new_with_label (_("Add"));
 	remove_button = gtk_button_new_with_label (_("Remove"));
 
+	g_signal_connect (radio_none, "toggled", G_CALLBACK (on_radio_button_clicked), GUINT_TO_POINTER (SORT_NONE));
+	g_signal_connect (radio_alpha, "toggled", G_CALLBACK (on_radio_button_clicked), GUINT_TO_POINTER (SORT_ALPHA));
+	g_signal_connect (radio_ralpha, "toggled", G_CALLBACK (on_radio_button_clicked), GUINT_TO_POINTER (SORT_RALPHA));
+	g_signal_connect (radio_time, "toggled", G_CALLBACK (on_radio_button_clicked), GUINT_TO_POINTER (SORT_TIME));
+	g_signal_connect (radio_rtime, "toggled", G_CALLBACK (on_radio_button_clicked), GUINT_TO_POINTER (SORT_RTIME));
 	g_signal_connect (add_button, "clicked", G_CALLBACK (on_prefs_dlg_add_btn_clicked), parent);
 	g_signal_connect (remove_button, "clicked", G_CALLBACK (on_prefs_dlg_rmv_btn_clicked), selection);
 
+	gtk_container_add (GTK_CONTAINER (content_area), sort_label);
+	gtk_container_add (GTK_CONTAINER (content_area), radio_none);
+	gtk_container_add (GTK_CONTAINER (content_area), radio_alpha);
+	gtk_container_add (GTK_CONTAINER (content_area), radio_ralpha);
+	gtk_container_add (GTK_CONTAINER (content_area), radio_time);
+	gtk_container_add (GTK_CONTAINER (content_area), radio_rtime);
 	gtk_container_add (GTK_CONTAINER (content_area), dirs_label);
 	gtk_container_add (GTK_CONTAINER (scroll), tree);
 	gtk_box_pack_start (GTK_BOX (button_box), add_button, FALSE, FALSE, 0);

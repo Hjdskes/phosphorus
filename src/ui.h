@@ -22,7 +22,7 @@
 
 G_BEGIN_DECLS
 
-GtkWidget *prefs_dialog_open (GtkWindow *parent);
+GtkWidget *prefs_dialog_open (GtkWindow *parent, unsigned int sort);
 GtkWidget *create_window (GtkListStore *store);
 
 G_END_DECLS
