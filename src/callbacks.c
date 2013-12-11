@@ -101,7 +101,7 @@ void on_prefs_button_clicked (GtkButton *button, gpointer user_data) {
 	GtkWidget *dialog;
 	int result;
 
-	dialog = prefs_dialog_open ((GtkWindow *) user_data, cfg.sort);
+	dialog = prefs_dialog_open ((GtkWindow *) user_data);
 	result = gtk_dialog_run (GTK_DIALOG (dialog));
 	switch (result) {
 		case GTK_RESPONSE_OK:

@@ -71,7 +71,7 @@ static void on_about_button_clicked (GtkButton *button, gpointer user_data) {
 	g_free (license_trans);
 }
 
-GtkWidget *prefs_dialog_open (GtkWindow *parent, unsigned int mode) {
+GtkWidget *prefs_dialog_open (GtkWindow *parent) {
 	GtkWidget *prefs_dialog, *content_area, *sort_label, *radio_none, *radio_alpha, *radio_ralpha, *radio_time, *radio_rtime;
 	GtkWidget *dirs_label, *scroll, *tree, *button_box, *add_button, *remove_button;
 	GSList *radio_group;
@@ -98,7 +98,7 @@ GtkWidget *prefs_dialog_open (GtkWindow *parent, unsigned int mode) {
 	radio_time = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio_none), _("Oldest first"));
 	radio_rtime = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio_none), _("Newest first"));
 
-	switch (mode) {
+	switch (cfg.sort) {
 		case 0:
 			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (radio_none), TRUE);
 			break;
