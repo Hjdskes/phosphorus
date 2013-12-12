@@ -217,7 +217,7 @@ static int get_options (int argc, char **argv) {
 	gboolean restore_background = FALSE;
 	gboolean display_version = FALSE;
 	gboolean sort_backgrounds = FALSE;
-	char *sort_mode;
+	char *sort_mode = NULL;
 
 	GOptionEntry option_entries[] = {
 		{ "version",  'v', 0, G_OPTION_ARG_NONE, &display_version, "Display version and exit", NULL },
@@ -257,17 +257,20 @@ static int get_options (int argc, char **argv) {
 			return 1;
 	}
 
-	if (g_strcmp0 (sort_mode, "alpha") == 0)
-		cfg.sort = 1;
-	else if (g_strcmp0 (sort_mode, "ralpha") == 0)
-		cfg.sort = 2;
-	else if (g_strcmp0 (sort_mode, "time") == 0)
-		g_fprintf (stderr, "Error: not implemented yet. Will use SORT_NONE for now.\n");
-		//cfg.sort = 3;
-	else if (g_strcmp0 (sort_mode, "rtime") == 0)
-		g_fprintf (stderr, "Error: not implemented yet. Will use SORT_NONE for now.\n");
-		//cfg.sort = 4;
-	else {}	/*silently fail and do nothing, cfg.sort is already initialized to 0.*/
+	if (sort_mode != NULL) {
+		if (g_strcmp0 (sort_mode, "alpha") == 0)
+			cfg.sort = 1;
+		else if (g_strcmp0 (sort_mode, "ralpha") == 0)
+			cfg.sort = 2;
+		else if (g_strcmp0 (sort_mode, "time") == 0)
+			g_fprintf (stderr, "Error: not implemented yet. Will use SORT_NONE for now.\n");
+			//cfg.sort = 3;
+		else if (g_strcmp0 (sort_mode, "rtime") == 0)
+			g_fprintf (stderr, "Error: not implemented yet. Will use SORT_NONE for now.\n");
+			//cfg.sort = 4;
+		else {}	/*silently fail and do nothing, cfg.sort is already initialized to 0.*/
+		g_free ((gpointer) sort_mode);
+	}
 
 	return 0;
 }
