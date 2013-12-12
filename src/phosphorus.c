@@ -248,7 +248,6 @@ static int get_options (int argc, char **argv) {
 
 	if (restore_background == TRUE) {
 		int res = set_background ();
-		//FIXME: g_free ((gpointer) config_file);
 		g_slist_free_full (cfg.dirs, (GDestroyNotify) g_free);
 		XCloseDisplay (xcon.dpy);
 		if (res == -1) {
@@ -296,6 +295,7 @@ int main (int argc, char **argv) {
 	config_dir = g_get_user_config_dir ();
 	config_file = g_build_filename (config_dir, "phosphorus/config.cfg", NULL);
 	load_config (config_file);
+	g_free ((gpointer) config_file);
 
 	if ((option = get_options (argc, argv) != 0))
 		return option < 0 ? -1 : 0;
@@ -311,10 +311,12 @@ int main (int argc, char **argv) {
 	g_thread_unref (load_wp_thread);
 	gtk_main ();
 
-	if (cfg.config_changed)
+	if (cfg.config_changed) {
+		config_file = g_build_filename (config_dir, "phosphorus/config.cfg", NULL);
 		save_config (config_file);
-
-	g_free ((gpointer) config_file);
+		g_free ((gpointer) config_file);
+	}
+	
 	g_slist_free_full (cfg.dirs, (GDestroyNotify) g_free);
 	XCloseDisplay (xcon.dpy);
 	return 0;
