@@ -1,16 +1,12 @@
-SUBDIRS = icons
+@INTLTOOL_DESKTOP_RULE@
+DESKTOP_IN_FILES = phosphorus.desktop.in.in
+DESKTOP_FILES = $(DESKTOP_IN_FILES:.desktop.in.in=.desktop)
 
 desktopdir = $(datadir)/applications
+desktop_DATA = $(DESKTOP_FILES)
 
-desktop_in_files = phosphorus.desktop.in
-desktop_DATA = $(phosphorus:.desktop.in=.desktop)
-@INTLTOOL_DESKTOP_RULE@
+EXTRA_DIST = \
+	$(DESKTOP_IN_FILES)
 
-UPDATE_DESKTOP = update-desktop-database $(datadir)/applications || :
-
-install-data-hook:
-        $(UPDATE_DESKTOP)
-uninstall-hook:
-        $(UPDATE_DESKTOP)
-
-EXTRA_DIST = icon-theme-installer
+DISTCLEANFILES = \
+	$(DESKTOP_FILES)

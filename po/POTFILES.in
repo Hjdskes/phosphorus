@@ -1,4 +1,3 @@
-data/phosphorus.desktop.in
-src/callbacks.c
-src/ui.c
-
+# List of source files containing translatable strings.
+# Please keep this list sorted alphabetically.
+data/phosphorus.desktop.in.in

@@ -1,51 +1,45 @@
-dnl
-dnl init phase
-dnl
-AC_INIT([phosphorus], [0.1], [jthidskes@outlook.com])
-AC_CONFIG_SRCDIR([src/phosphorus.c])
-AM_INIT_AUTOMAKE([-Wall])
+AC_INIT([Phosphorus], 0.2, [hjdskes@gmail.com], [phosphorus], [https://unia.github.io/phosphorus])
+AM_INIT_AUTOMAKE([1.11 foreign dist-xz no-dist-gzip subdir-objects -Wno-portability])
 AM_SILENT_RULES([yes])
 
-dnl
-dnl shopping list
-dnl
 AC_PROG_CC
-PKG_PROG_PKG_CONFIG
-IT_PROG_INTLTOOL([0.35.0])
+AC_PROG_CC_STDC
+AC_CONFIG_HEADERS([config.h])
 
-ALL_LINGUAS=""
+LT_PREREQ([2.2.6])
+LT_INIT([disable-static])
+
+# Internationalization
 AM_GLIB_GNU_GETTEXT
+IT_PROG_INTLTOOL([0.50.1])
 
-LOCALE_DIR='${prefix}/${DATADIRNAME}/locale'
-AC_SUBST(LOCALE_DIR)
-
-GETTEXT_PACKAGE=phosphorus
+GETTEXT_PACKAGE=AC_PACKAGE_NAME
 AC_SUBST(GETTEXT_PACKAGE)
-AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE")
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext package.])
 
-GDK_PIXBUF_VERSION=2.26.1
-GTK3_VERSION=3.4.2
+# Package requirements
+PKG_CHECK_MODULES([PHOSPHORUS], [gtk+-3.0 >= 3.12.0])
 
-AC_SUBST(GDK_PIXBUF_VERSION)
-AC_SUBST(GTK3_VERSION)
-PKG_CHECK_MODULES(GTK3,[gtk+-3.0 >= $GTK3_VERSION])
-PKG_CHECK_MODULES(GDK_PIXBUF,[gdk-pixbuf-xlib-2.0 >= $GDK_PIXBUF_VERSION])
+AC_CONFIG_FILES(Makefile
+		data/Makefile
+		data/phosphorus.desktop.in
+		src/Makefile
+		po/Makefile.in)
 
-PHOSPHORUS_LIBS="$GTK3_LIBS $GDK_PIXBUF_LIBS"
-PHOSPHORUS_CFLAGS="$GTK3_CFLAGS $GDK_PIXBUF_CFLAGS"
-AC_CHECK_LIB(X11, XOpenDisplay, [PHOSPHORUS_LIBS="$PHOSPHORUS_LIBS -lX11"])
-AC_CHECK_LIB(m, ceil, [PHOSPHORUS_LIBS="$PHOSPHORUS_LIBS -lm"])
-
-PHOSPHORUS_CFLAGS="-std=c99 -Wextra -Wno-unused-parameter $PHOSPHORUS_CFLAGS"
-
-AC_SUBST(PHOSPHORUS_LIBS)
-AC_SUBST(PHOSPHORUS_CFLAGS)
-
-dnl
-dnl output phase
-dnl
-AC_CONFIG_FILES([Makefile src/Makefile data/Makefile data/phosphorus.desktop data/icons/Makefile po/Makefile.in])
 AC_OUTPUT
 
-echo ""
-echo "You can now type \"make\" to compile phosphorus."
+AC_MSG_RESULT([
+        $PACKAGE $VERSION
+        ========
+
+        prefix:                 ${prefix}
+        libdir:                 ${libdir}
+        sysconfdir:             ${sysconfdir}
+        exec_prefix:            ${exec_prefix}
+        bindir:                 ${bindir}
+        datarootdir:            ${datarootdir}
+
+        compiler:               ${CC}
+        cflags:                 ${CFLAGS}
+        ldflags:                ${LDFLAGS}
+])
