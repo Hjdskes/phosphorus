@@ -20,6 +20,8 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext package.])
 # Package requirements
 PKG_CHECK_MODULES([PHOSPHORUS], [gtk+-3.0 >= 3.12.0])
 
+AC_PATH_PROG(GLIB_COMPILE_RESOURCES, glib-compile-resources)
+
 AC_CONFIG_FILES(Makefile
 		data/Makefile
 		data/phosphorus.desktop.in
