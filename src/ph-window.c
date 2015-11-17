@@ -25,6 +25,7 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 
+#include "ph-thumbview.h"
 #include "ph-window.h"
 
 /* Copyright years. */
@@ -32,6 +33,7 @@
 
 struct _PhWindowPrivate {
 	GtkWidget *headerbar;
+	PhThumbview *thumbview;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PhWindow, ph_window, GTK_TYPE_APPLICATION_WINDOW);
@@ -56,6 +58,7 @@ ph_window_class_init (PhWindowClass *ph_window_class)
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/unia/phosphorus/window.ui");
 
 	gtk_widget_class_bind_template_child_private (widget_class, PhWindow, headerbar);
+	gtk_widget_class_bind_template_child_private (widget_class, PhWindow, thumbview);
 }
 
 static void
@@ -72,6 +75,9 @@ ph_window_init (PhWindow *window)
 					 window_actions,
 					 G_N_ELEMENTS (window_actions),
 					 window);
+
+	// FIXME: unhardcode, obviously :)
+	ph_thumbview_add_directory (priv->thumbview, RECURSE, "/home/jente/Downloads/Achtergronden/");
 }
 
 PhWindow *

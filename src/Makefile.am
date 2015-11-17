@@ -8,6 +8,7 @@ phosphorus_SOURCES = \
 	ph-application.c \
 	ph-thumbview.c \
 	ph-window.c \
+	util.c \
 	main.c
 
 phosphorus_CFLAGS = \

@@ -2,12 +2,37 @@
 <!-- Generated with glade 3.19.0 -->
 <interface>
   <requires lib="gtk+" version="3.16"/>
+  <object class="GtkListStore" id="store">
+    <columns>
+      <!-- column-name thumbnails -->
+      <column type="GdkPixbuf"/>
+      <!-- column-name paths -->
+      <column type="gchar"/>
+      <!-- column-name names -->
+      <column type="gchar"/>
+    </columns>
+  </object>
   <template class="PhThumbview" parent="GtkScrolledWindow">
     <property name="visible">True</property>
     <property name="can_focus">True</property>
     <property name="shadow_type">in</property>
     <child>
-      <placeholder/>
+      <object class="GtkIconView" id="iconview">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="margin">6</property>
+        <property name="hscroll_policy">natural</property>
+        <property name="vscroll_policy">natural</property>
+        <property name="item_orientation">horizontal</property>
+        <property name="model">store</property>
+        <property name="columns">-1</property>
+        <property name="pixbuf_column">0</property>
+        <!-- FIXME: use columns to display more information -->
+        <property name="text_column">-1</property>
+        <property name="markup_column">-1</property>
+        <property name="tooltip_column">-1</property>
+        <property name="activate_on_single_click">True</property>
+      </object>
     </child>
   </template>
 </interface>
