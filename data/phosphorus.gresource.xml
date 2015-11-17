@@ -3,6 +3,7 @@
     <gresource prefix="/org/unia/phosphorus/">
     <!-- Using this alias, GtkApplication will automatically pick it up for us. -->
     <file alias="gtk/menus.ui" preprocess="xml-stripblanks">menus.ui</file>
+    <file preprocess="xml-stripblanks">thumbview.ui</file>
     <file preprocess="xml-stripblanks">window.ui</file>
   </gresource>
 </gresources>

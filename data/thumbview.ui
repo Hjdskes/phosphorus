@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.19.0 -->
+<interface>
+  <requires lib="gtk+" version="3.16"/>
+  <template class="PhThumbview" parent="GtkScrolledWindow">
+    <property name="visible">True</property>
+    <property name="can_focus">True</property>
+    <property name="shadow_type">in</property>
+    <child>
+      <placeholder/>
+    </child>
+  </template>
+</interface>

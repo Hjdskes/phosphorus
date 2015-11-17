@@ -6,6 +6,7 @@ bin_PROGRAMS = \
 phosphorus_SOURCES = \
 	../data/phosphorus-resources.c \
 	ph-application.c \
+	ph-thumbview.c \
 	ph-window.c \
 	main.c
 
