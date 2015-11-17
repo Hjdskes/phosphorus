@@ -38,6 +38,8 @@ struct _PhThumbviewPrivate {
 /* Synced with the list store defined in data/thumbview.ui. */
 enum {
 	COLUMN_THUMB,
+	COLUMN_PATH,
+	COLUMN_NAME,
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PhThumbview, ph_thumbview, GTK_TYPE_SCROLLED_WINDOW);
@@ -49,6 +51,7 @@ ph_thumbview_add_image (PhThumbview *thumbview, const gchar *file)
 	GdkPixbuf *thumb = NULL;
 	GError *error = NULL;
 	GtkTreeIter iter;
+	gchar *basename;
 
 	priv = ph_thumbview_get_instance_private (thumbview);
 
@@ -58,10 +61,14 @@ ph_thumbview_add_image (PhThumbview *thumbview, const gchar *file)
 		return;
 	}
 
+	basename = g_path_get_basename (file);
 	gtk_list_store_append (priv->store, &iter);
 	gtk_list_store_set (priv->store, &iter,
 			    COLUMN_THUMB, thumb,
+			    COLUMN_PATH, file,
+			    COLUMN_NAME, basename,
 			    -1);
+	g_free (basename);
 	g_object_unref (thumb);
 }
 

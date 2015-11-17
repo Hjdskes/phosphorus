@@ -7,9 +7,9 @@
       <!-- column-name thumbnails -->
       <column type="GdkPixbuf"/>
       <!-- column-name paths -->
-      <column type="gchar"/>
+      <column type="gchararray"/>
       <!-- column-name names -->
-      <column type="gchar"/>
+      <column type="gchararray"/>
     </columns>
   </object>
   <template class="PhThumbview" parent="GtkScrolledWindow">
@@ -27,10 +27,8 @@
         <property name="model">store</property>
         <property name="columns">-1</property>
         <property name="pixbuf_column">0</property>
-        <!-- FIXME: use columns to display more information -->
         <property name="text_column">-1</property>
-        <property name="markup_column">-1</property>
-        <property name="tooltip_column">-1</property>
+        <property name="tooltip_column">2</property>
         <property name="activate_on_single_click">True</property>
       </object>
     </child>
