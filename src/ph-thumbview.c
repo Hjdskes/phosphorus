@@ -28,8 +28,8 @@
 #include "ph-thumbview.h"
 #include "util.h"
 
-#define THUMB_WIDTH 80
-#define THUMB_HEIGHT 60
+#define THUMB_WIDTH 120
+#define THUMB_HEIGHT 80
 
 /* Synced with the list store defined in data/thumbview.ui. */
 enum {
