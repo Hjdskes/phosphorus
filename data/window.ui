@@ -15,7 +15,7 @@
     <property name="icon_name">preferences-wallpaper</property>
     <child>
       <object class="PhThumbview" id="thumbview">
-        <signal name="activated" handler="ph_window_thumbview_activated" swapped="no"/>
+        <signal name="activated" handler="ph_window_thumbview_activated" object="PhWindow" swapped="no"/>
       </object>
     </child>
     <child type="titlebar">

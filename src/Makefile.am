@@ -6,6 +6,8 @@ bin_PROGRAMS = \
 phosphorus_SOURCES = \
 	../data/phosphorus-resources.c \
 	ph-application.c \
+	ph-backend.c \
+	ph-backend-gnome.c \
 	ph-thumbview.c \
 	ph-window.c \
 	util.c \

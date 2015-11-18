@@ -4,5 +4,6 @@ data/menus.ui
 data/phosphorus.desktop.in.in
 src/main.c
 src/ph-application.c
+src/ph-backend-gnome.c
 src/ph-thumbview.c
 src/ph-window.c

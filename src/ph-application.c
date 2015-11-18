@@ -26,6 +26,8 @@
 #include <glib/gi18n.h>
 
 #include "ph-application.h"
+#include "ph-backend.h"
+#include "ph-backend-gnome.h"
 #include "ph-thumbview.h"
 #include "ph-window.h"
 
@@ -35,6 +37,7 @@
 
 struct _PhApplicationPrivate {
 	GSettings *settings;
+	PhBackend *backend;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PhApplication, ph_application, GTK_TYPE_APPLICATION);
@@ -133,7 +136,7 @@ ph_application_activate (GApplication *application)
 
 	directories = g_settings_get_strv (priv->settings, KEY_DIRECTORIES);
 	recurse = g_settings_get_enum (priv->settings, KEY_RECURSE);
-	window = ph_window_new (PH_APPLICATION (application));
+	window = ph_window_new (PH_APPLICATION (application), PH_BACKEND (priv->backend));
 	ph_window_scan_directories (window, recurse, directories);
 	g_strfreev (directories);
 
@@ -141,9 +144,32 @@ ph_application_activate (GApplication *application)
 }
 
 static void
+ph_application_dispose (GObject *object)
+{
+	PhApplicationPrivate *priv;
+
+	priv = ph_application_get_instance_private (PH_APPLICATION (object));
+
+	if (priv->settings) {
+		g_object_unref (priv->settings);
+		priv->settings = NULL;
+	}
+
+	if (priv->backend) {
+		g_object_unref (priv->backend);
+		priv->backend = NULL;
+	}
+
+	G_OBJECT_CLASS (ph_application_parent_class)->dispose (object);
+}
+
+static void
 ph_application_class_init (PhApplicationClass *ph_application_class)
 {
+	GObjectClass *object_class = G_OBJECT_CLASS (ph_application_class);
 	GApplicationClass *application_class = G_APPLICATION_CLASS (ph_application_class);
+
+	object_class->dispose = ph_application_dispose;
 
 	application_class->startup = ph_application_startup;
 	application_class->activate = ph_application_activate;
@@ -152,6 +178,12 @@ ph_application_class_init (PhApplicationClass *ph_application_class)
 static void
 ph_application_init (PhApplication *application)
 {
+	PhApplicationPrivate *priv;
+
+	priv = ph_application_get_instance_private (application);
+
+	/* TODO: decide which one when building Phosphorus? */
+	priv->backend = ph_backend_gnome_new ();
 }
 
 PhApplication *
