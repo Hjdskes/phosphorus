@@ -64,7 +64,7 @@ ph_thumbview_add_image (PhThumbview *thumbview, const gchar *file)
 
 	thumb = gdk_pixbuf_new_from_file_at_size (file, THUMB_WIDTH, THUMB_HEIGHT, &error);
 	if (!thumb) {
-		g_printerr ("Could not load image \"%s\": %s\n", file, error->message);
+		g_printerr (_("Could not load image \"%s\": %s\n"), file, error->message);
 		return;
 	}
 
@@ -90,7 +90,7 @@ ph_thumbview_item_activated (GtkIconView *iconview, GtkTreePath *path, gpointer 
 	priv = ph_thumbview_get_instance_private (thumbview);
 
 	if (!gtk_tree_model_get_iter (GTK_TREE_MODEL (priv->store), &iter, path)) {
-		g_printerr ("Invalid path, won't emit signal\n");
+		g_printerr (_("Invalid path, won't emit signal\n"));
 		return;
 	}
 
