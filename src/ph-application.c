@@ -28,7 +28,14 @@
 #include "ph-application.h"
 #include "ph-window.h"
 
-G_DEFINE_TYPE (PhApplication, ph_application, GTK_TYPE_APPLICATION);
+#define SCHEMA "org.unia.phosphorus"
+#define KEY_DIRECTORIES "directories"
+
+struct _PhApplicationPrivate {
+	GSettings *settings;
+};
+
+G_DEFINE_TYPE_WITH_PRIVATE (PhApplication, ph_application, GTK_TYPE_APPLICATION);
 
 static void
 ph_application_action_preferences (GSimpleAction *action,
@@ -94,7 +101,14 @@ ph_application_init_accelerators (GtkApplication *application)
 static void
 ph_application_startup (GApplication *application)
 {
+	PhApplicationPrivate *priv;
+
 	G_APPLICATION_CLASS (ph_application_parent_class)->startup (application);
+
+	priv = ph_application_get_instance_private (PH_APPLICATION (application));
+
+	// TODO: update live when new directory is added
+	priv->settings = g_settings_new (SCHEMA);
 
 	g_set_application_name (_("Wallpaper browser"));
 
@@ -108,9 +122,17 @@ ph_application_startup (GApplication *application)
 static void
 ph_application_activate (GApplication *application)
 {
+	PhApplicationPrivate *priv;
 	PhWindow *window;
+	gchar **directories;
 
+	priv = ph_application_get_instance_private (PH_APPLICATION (application));
+
+	directories = g_settings_get_strv (priv->settings, KEY_DIRECTORIES);
 	window = ph_window_new (PH_APPLICATION (application));
+	ph_window_scan_directories (window, directories);
+	g_strfreev (directories);
+
 	gtk_window_present_with_time (GTK_WINDOW (window), GDK_CURRENT_TIME);
 }
 

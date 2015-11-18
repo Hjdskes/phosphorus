@@ -27,6 +27,7 @@ G_BEGIN_DECLS
 
 typedef struct _PhApplication        PhApplication;
 typedef struct _PhApplicationClass   PhApplicationClass;
+typedef struct _PhApplicationPrivate PhApplicationPrivate;
 
 #define PH_TYPE_APPLICATION            (ph_application_get_type ())
 #define PH_APPLICATION(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), PH_TYPE_APPLICATION, PhApplication))

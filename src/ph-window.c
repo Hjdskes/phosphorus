@@ -83,9 +83,6 @@ ph_window_init (PhWindow *window)
 					 window_actions,
 					 G_N_ELEMENTS (window_actions),
 					 window);
-
-	// FIXME: unhardcode, obviously :)
-	ph_thumbview_add_directory (priv->thumbview, RECURSE, "/home/jente/Downloads/Achtergronden/");
 }
 
 PhWindow *
@@ -126,5 +123,17 @@ ph_window_close (PhWindow *window)
 {
 	g_return_if_fail (PH_IS_WINDOW (window));
 	gtk_widget_destroy (GTK_WIDGET (window));
+}
+
+void
+ph_window_scan_directories (PhWindow *window, gchar * const *directories)
+{
+	PhWindowPrivate *priv;
+
+	priv = ph_window_get_instance_private (window);
+
+	for (; *directories; directories++) {
+		ph_thumbview_add_directory (priv->thumbview, RECURSE, *directories);
+	}
 }
 

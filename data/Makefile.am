@@ -5,8 +5,12 @@ DESKTOP_FILES = $(DESKTOP_IN_FILES:.desktop.in.in=.desktop)
 desktopdir = $(datadir)/applications
 desktop_DATA = $(DESKTOP_FILES)
 
+gsettings_SCHEMAS = org.unia.phosphorus.gschema.xml
+@GSETTINGS_RULES@
+
 EXTRA_DIST = \
 	$(DESKTOP_IN_FILES) \
+	$(gsettings_SCHEMAS) \
 	phosphorus.gresource.xml
 
 resource_files = $(shell $(GLIB_COMPILE_RESOURCES) --sourcedir=$(top_srcdir)/data --generate-dependencies $(top_srcdir)/data/phosphorus.gresource.xml)

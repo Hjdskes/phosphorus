@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="phosphorus">
+  <schema path="/org/unia/phosphorus/" id="org.unia.phosphorus">
+    <key type="as" name="directories">
+      <default>['']</default>
+      <summary>Directories to scan for wallpapers</summary>
+      <description>An array of directories which Phosphorus will scan for wallpapers.</description>
+    </key>
+  </schema>
+</schemalist>
