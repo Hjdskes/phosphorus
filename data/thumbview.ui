@@ -30,6 +30,7 @@
         <property name="text_column">-1</property>
         <property name="tooltip_column">2</property>
         <property name="activate_on_single_click">True</property>
+        <signal name="item-activated" handler="ph_thumbview_item_activated" object="PhThumbview" swapped="no"/>
       </object>
     </child>
   </template>

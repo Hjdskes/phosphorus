@@ -51,6 +51,12 @@ static const GActionEntry window_actions[] = {
 };
 
 static void
+ph_window_thumbview_activated (PhThumbview *thumbview, const gchar *filepath, gpointer user_data)
+{
+	g_print ("Activated: %s\n", filepath);
+}
+
+static void
 ph_window_class_init (PhWindowClass *ph_window_class)
 {
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (ph_window_class);
@@ -59,6 +65,8 @@ ph_window_class_init (PhWindowClass *ph_window_class)
 
 	gtk_widget_class_bind_template_child_private (widget_class, PhWindow, headerbar);
 	gtk_widget_class_bind_template_child_private (widget_class, PhWindow, thumbview);
+
+	gtk_widget_class_bind_template_callback (widget_class, ph_window_thumbview_activated);
 }
 
 static void

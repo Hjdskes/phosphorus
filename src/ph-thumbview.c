@@ -22,8 +22,8 @@
 #include "config.h"
 #endif
 
-#include <gtk/gtk.h>
 #include <glib/gi18n.h>
+#include <gtk/gtk.h>
 
 #include "ph-thumbview.h"
 #include "util.h"
@@ -31,15 +31,22 @@
 #define THUMB_WIDTH 80
 #define THUMB_HEIGHT 60
 
-struct _PhThumbviewPrivate {
-	GtkListStore *store;
-};
-
 /* Synced with the list store defined in data/thumbview.ui. */
 enum {
 	COLUMN_THUMB,
 	COLUMN_PATH,
 	COLUMN_NAME,
+};
+
+enum {
+	SIGNAL_ACTIVATED,
+	SIGNAL_LAST
+};
+
+static guint signals[SIGNAL_LAST];
+
+struct _PhThumbviewPrivate {
+	GtkListStore *store;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PhThumbview, ph_thumbview, GTK_TYPE_SCROLLED_WINDOW);
@@ -73,14 +80,46 @@ ph_thumbview_add_image (PhThumbview *thumbview, const gchar *file)
 }
 
 static void
+ph_thumbview_item_activated (GtkIconView *iconview, GtkTreePath *path, gpointer user_data)
+{
+	PhThumbview *thumbview = PH_THUMBVIEW (user_data);
+	PhThumbviewPrivate *priv;
+	GtkTreeIter iter;
+	gchar *filepath;
+
+	priv = ph_thumbview_get_instance_private (thumbview);
+
+	if (!gtk_tree_model_get_iter (GTK_TREE_MODEL (priv->store), &iter, path)) {
+		g_printerr ("Invalid path, won't emit signal\n");
+		return;
+	}
+
+	gtk_tree_model_get (GTK_TREE_MODEL (priv->store), &iter, COLUMN_PATH, &filepath, -1);
+	g_signal_emit (thumbview, signals[SIGNAL_ACTIVATED], 0, filepath);
+	g_free (filepath);
+}
+
+static void
 ph_thumbview_class_init (PhThumbviewClass *ph_thumbview_class)
 {
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (ph_thumbview_class);
+
+	signals[SIGNAL_ACTIVATED] =
+		g_signal_new ("activated", // FIXME: wrap in I_()?
+			      PH_TYPE_THUMBVIEW,
+			      G_SIGNAL_RUN_LAST,
+			      0,
+			      NULL, NULL,
+			      g_cclosure_marshal_VOID__STRING,
+			      G_TYPE_NONE, 1,
+			      G_TYPE_STRING);
 
 	gtk_widget_class_set_template_from_resource (widget_class,
 			"/org/unia/phosphorus/thumbview.ui");
 
 	gtk_widget_class_bind_template_child_private (widget_class, PhThumbview, store);
+
+	gtk_widget_class_bind_template_callback (widget_class, ph_thumbview_item_activated);
 }
 
 static void
