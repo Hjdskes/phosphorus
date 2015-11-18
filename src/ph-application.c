@@ -26,10 +26,12 @@
 #include <glib/gi18n.h>
 
 #include "ph-application.h"
+#include "ph-thumbview.h"
 #include "ph-window.h"
 
 #define SCHEMA "org.unia.phosphorus"
 #define KEY_DIRECTORIES "directories"
+#define KEY_RECURSE "recursion"
 
 struct _PhApplicationPrivate {
 	GSettings *settings;
@@ -124,13 +126,15 @@ ph_application_activate (GApplication *application)
 {
 	PhApplicationPrivate *priv;
 	PhWindow *window;
+	PhRecurseType recurse;
 	gchar **directories;
 
 	priv = ph_application_get_instance_private (PH_APPLICATION (application));
 
 	directories = g_settings_get_strv (priv->settings, KEY_DIRECTORIES);
+	recurse = g_settings_get_enum (priv->settings, KEY_RECURSE);
 	window = ph_window_new (PH_APPLICATION (application));
-	ph_window_scan_directories (window, directories);
+	ph_window_scan_directories (window, recurse, directories);
 	g_strfreev (directories);
 
 	gtk_window_present_with_time (GTK_WINDOW (window), GDK_CURRENT_TIME);

@@ -126,14 +126,14 @@ ph_window_close (PhWindow *window)
 }
 
 void
-ph_window_scan_directories (PhWindow *window, gchar * const *directories)
+ph_window_scan_directories (PhWindow *window, PhRecurseType recurse, gchar * const *directories)
 {
 	PhWindowPrivate *priv;
 
 	priv = ph_window_get_instance_private (window);
 
 	for (; *directories; directories++) {
-		ph_thumbview_add_directory (priv->thumbview, RECURSE, *directories);
+		ph_thumbview_add_directory (priv->thumbview, recurse, *directories);
 	}
 }
 

@@ -23,6 +23,7 @@
 #include <gtk/gtk.h>
 
 #include "ph-application.h"
+#include "ph-thumbview.h"
 
 G_BEGIN_DECLS
 
@@ -53,7 +54,9 @@ void      ph_window_show_about_dialog (PhWindow *window);
 
 void      ph_window_close (PhWindow *window);
 
-void      ph_window_scan_directories (PhWindow *window, gchar * const *directories);
+void      ph_window_scan_directories (PhWindow *window,
+				      PhRecurseType recurse,
+				      gchar * const *directories);
 
 G_END_DECLS
 

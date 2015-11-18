@@ -157,8 +157,12 @@ ph_thumbview_add_directory (PhThumbview *thumbview, PhRecurseType recurse, const
 	while ((file = g_dir_read_name (directory))) {
 		filepath = g_build_filename (path, file, NULL);
 
-		if (g_file_test (filepath, G_FILE_TEST_IS_DIR) && recurse == RECURSE) {
-			ph_thumbview_add_directory (thumbview, recurse, filepath);
+		if (g_file_test (filepath, G_FILE_TEST_IS_DIR)) {
+			if (recurse == RECURSE) {
+				ph_thumbview_add_directory (thumbview, recurse, filepath);
+			} else {
+				continue;
+			}
 		} else if (ph_file_is_image (file)) {
 			ph_thumbview_add_image (thumbview, filepath);
 		}
