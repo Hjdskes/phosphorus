@@ -65,6 +65,7 @@ ph_thumbview_add_image (PhThumbview *thumbview, const gchar *file)
 	thumb = gdk_pixbuf_new_from_file_at_size (file, THUMB_WIDTH, THUMB_HEIGHT, &error);
 	if (!thumb) {
 		g_printerr (_("Could not load image \"%s\": %s\n"), file, error->message);
+		g_clear_error (&error);
 		return;
 	}
 
