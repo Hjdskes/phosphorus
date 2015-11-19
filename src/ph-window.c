@@ -201,6 +201,9 @@ ph_window_scan_directories (PhWindow *window, PhRecurseType recurse, gchar * con
 {
 	PhWindowPrivate *priv;
 
+	g_return_if_fail (PH_IS_WINDOW (window));
+	g_return_if_fail (directories != NULL);
+
 	priv = ph_window_get_instance_private (window);
 
 	for (; *directories; directories++) {

@@ -142,7 +142,7 @@ ph_thumbview_add_directory (PhThumbview *thumbview, PhRecurseType recurse, const
 	const gchar *file;
 	GError *error = NULL;
 
-	g_return_if_fail (thumbview != NULL);
+	g_return_if_fail (PH_IS_THUMBVIEW (thumbview));
 	g_return_if_fail (path != NULL);
 
 	directory = g_dir_open (path, 0, &error);
