@@ -21,7 +21,9 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext package.])
 GLIB_GSETTINGS
 
 # Package requirements
-PKG_CHECK_MODULES([PHOSPHORUS], [gtk+-3.0 >= 3.12.0])
+PKG_CHECK_MODULES([PHOSPHORUS], [gtk+-3.0 >= 3.12.0,
+				 gio-2.0 >= 2.44.0,
+				 gdk-pixbuf-xlib-2.0 >= 2.4.0])
 
 AC_PATH_PROG(GLIB_COMPILE_RESOURCES, glib-compile-resources)
 
