@@ -46,6 +46,7 @@ enum {
 static guint signals[SIGNAL_LAST];
 
 struct _PhThumbviewPrivate {
+	GtkIconView *iconview;
 	GtkListStore *store;
 };
 
@@ -118,6 +119,7 @@ ph_thumbview_class_init (PhThumbviewClass *ph_thumbview_class)
 	gtk_widget_class_set_template_from_resource (widget_class,
 			"/org/unia/phosphorus/thumbview.ui");
 
+	gtk_widget_class_bind_template_child_private (widget_class, PhThumbview, iconview);
 	gtk_widget_class_bind_template_child_private (widget_class, PhThumbview, store);
 
 	gtk_widget_class_bind_template_callback (widget_class, ph_thumbview_item_activated);
@@ -172,5 +174,21 @@ ph_thumbview_add_directory (PhThumbview *thumbview, PhRecurseType recurse, const
 	}
 
 	g_dir_close (directory);
+}
+
+void
+ph_thumbview_activate (PhThumbview *thumbview)
+{
+	PhThumbviewPrivate *priv;
+	GList *selected_items;
+
+	g_return_if_fail (PH_IS_THUMBVIEW (thumbview));
+
+	priv = ph_thumbview_get_instance_private (thumbview);
+
+	selected_items = gtk_icon_view_get_selected_items (priv->iconview);
+	/* Phosphorus has single selection mode, so no use getting more than the first item. */
+	gtk_icon_view_item_activated (priv->iconview, selected_items->data);
+	g_list_free_full (selected_items, (GDestroyNotify) gtk_tree_path_free);
 }
 

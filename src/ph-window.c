@@ -51,7 +51,11 @@ ph_window_action_apply (GSimpleAction *action,
 			GVariant      *parameter,
 			gpointer       user_data)
 {
-	g_print ("Apply\n");
+	PhWindowPrivate *priv;
+
+	priv = ph_window_get_instance_private (PH_WINDOW (user_data));
+
+	ph_thumbview_activate (priv->thumbview);
 }
 
 static const GActionEntry window_actions[] = {

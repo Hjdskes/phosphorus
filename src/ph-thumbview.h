@@ -56,5 +56,7 @@ void         ph_thumbview_add_directory (PhThumbview *thumbview,
 					 PhRecurseType recurse,
 					 const gchar *path);
 
+void         ph_thumbview_activate (PhThumbview *thumbview);
+
 G_END_DECLS
 
