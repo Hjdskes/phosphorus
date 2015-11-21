@@ -73,6 +73,20 @@ ph_window_thumbview_activated (PhThumbview *thumbview, const gchar *filepath, gp
 }
 
 static void
+ph_window_thumbview_selection_changed (PhThumbview *thumbview, gpointer user_data)
+{
+	GAction *action;
+	gboolean enabled;
+
+	action = g_action_map_lookup_action (G_ACTION_MAP (user_data), "apply");
+	g_object_get (G_OBJECT (action), "enabled", &enabled, NULL);
+
+	if (G_UNLIKELY (!enabled)) {
+		g_simple_action_set_enabled (G_SIMPLE_ACTION (action), TRUE);
+	}
+}
+
+static void
 ph_window_get_property (GObject    *object,
 			guint       property_id,
 			GValue     *value,
@@ -137,12 +151,14 @@ ph_window_class_init (PhWindowClass *ph_window_class)
 	gtk_widget_class_bind_template_child_private (widget_class, PhWindow, thumbview);
 
 	gtk_widget_class_bind_template_callback (widget_class, ph_window_thumbview_activated);
+	gtk_widget_class_bind_template_callback (widget_class, ph_window_thumbview_selection_changed);
 }
 
 static void
 ph_window_init (PhWindow *window)
 {
 	PhWindowPrivate *priv;
+	GAction *action;
 
 	priv = ph_window_get_instance_private (window);
 
@@ -153,6 +169,9 @@ ph_window_init (PhWindow *window)
 					 window_actions,
 					 G_N_ELEMENTS (window_actions),
 					 window);
+
+	action = g_action_map_lookup_action (G_ACTION_MAP (window), "apply");
+	g_simple_action_set_enabled (G_SIMPLE_ACTION (action), FALSE);
 }
 
 PhWindow *

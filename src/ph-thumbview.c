@@ -40,6 +40,7 @@ enum {
 
 enum {
 	SIGNAL_ACTIVATED,
+	SIGNAL_SELECTION_CHANGED,
 	SIGNAL_LAST
 };
 
@@ -102,6 +103,12 @@ ph_thumbview_item_activated (GtkIconView *iconview, GtkTreePath *path, gpointer 
 }
 
 static void
+ph_thumbview_selection_changed (GtkIconView *iconview, gpointer user_data)
+{
+	g_signal_emit (PH_THUMBVIEW (user_data), signals[SIGNAL_SELECTION_CHANGED], 0);
+}
+
+static void
 ph_thumbview_class_init (PhThumbviewClass *ph_thumbview_class)
 {
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (ph_thumbview_class);
@@ -116,6 +123,15 @@ ph_thumbview_class_init (PhThumbviewClass *ph_thumbview_class)
 			      G_TYPE_NONE, 1,
 			      G_TYPE_STRING);
 
+	signals[SIGNAL_SELECTION_CHANGED] =
+		g_signal_new ("selection-changed", // FIXME: wrap in I_()?
+			      PH_TYPE_THUMBVIEW,
+			      G_SIGNAL_RUN_LAST,
+			      0,
+			      NULL, NULL,
+			      g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+
 	gtk_widget_class_set_template_from_resource (widget_class,
 			"/org/unia/phosphorus/thumbview.ui");
 
@@ -123,6 +139,7 @@ ph_thumbview_class_init (PhThumbviewClass *ph_thumbview_class)
 	gtk_widget_class_bind_template_child_private (widget_class, PhThumbview, store);
 
 	gtk_widget_class_bind_template_callback (widget_class, ph_thumbview_item_activated);
+	gtk_widget_class_bind_template_callback (widget_class, ph_thumbview_selection_changed);
 }
 
 static void

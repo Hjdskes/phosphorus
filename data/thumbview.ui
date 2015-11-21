@@ -31,6 +31,7 @@
         <property name="tooltip_column">2</property>
         <property name="activate_on_single_click">True</property>
         <signal name="item-activated" handler="ph_thumbview_item_activated" object="PhThumbview" swapped="no"/>
+        <signal name="selection-changed" handler="ph_thumbview_selection_changed" object="PhThumbview" swapped="no"/>
       </object>
     </child>
   </template>
