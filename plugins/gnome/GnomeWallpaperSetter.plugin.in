@@ -1,0 +1,10 @@
+[Plugin]
+_Name=GNOME Wallpaper Setter
+_Description=Set the wallpaper using GNOME Shell's backend
+Authors=Jente Hidskes
+Copyright=Copyright © 2016 Jente Hidskes
+Website=https://github.com/Unia/phosphorus
+Icon=gnome
+Module=GnomeWallpaperSetter
+Loader=python3
+IAge=3

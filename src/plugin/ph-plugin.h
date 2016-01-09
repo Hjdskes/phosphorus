@@ -1,6 +1,6 @@
-/* PhBackend
+/* PhPlugin
  *
- * Copyright (C) 2015 Jente Hidskes
+ * Copyright (C) 2015-2016 Jente Hidskes
  *
  * Author: Jente Hidskes <hjdskes@gmail.com>
  *
@@ -24,17 +24,18 @@
 
 G_BEGIN_DECLS
 
-#define PH_TYPE_BACKEND ph_backend_get_type ()
+#define PH_TYPE_PLUGIN ph_plugin_get_type ()
 
-G_DECLARE_INTERFACE (PhBackend, ph_backend, PH, BACKEND, GObject)
+G_DECLARE_INTERFACE (PhPlugin, ph_plugin, PH, PLUGIN, GObject)
 
-struct _PhBackendInterface {
+struct _PhPluginInterface {
 	GTypeInterface interface;
 
-	void (*set_background) (PhBackend *backend, const gchar *filepath);
+	/* Virtual public methods */
+	void (*set_background) (PhPlugin *plugin, const gchar *filepath);
 };
 
-void ph_backend_set_background (PhBackend *backend, const gchar *filepath);
+void ph_plugin_set_background (PhPlugin *plugin, const gchar *filepath);
 
 G_END_DECLS
 

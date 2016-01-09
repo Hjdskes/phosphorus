@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-    <gresource prefix="/org/unia/phosphorus/">
+  <gresource prefix="/org/unia/phosphorus/">
     <!-- Using this alias, GtkApplication will automatically pick it up for us. -->
-    <file alias="gtk/menus.ui" preprocess="xml-stripblanks">menus.ui</file>
-    <file preprocess="xml-stripblanks">thumbview.ui</file>
-    <file preprocess="xml-stripblanks">window.ui</file>
+    <file alias="gtk/menus.ui" preprocess="xml-stripblanks">ui/menus.ui</file>
+    <!-- Use these aliases to make the source code agnostic to the file tree. -->
+    <file alias="thumbview.ui" preprocess="xml-stripblanks">ui/thumbview.ui</file>
+    <file alias="window.ui" preprocess="xml-stripblanks">ui/window.ui</file>
   </gresource>
 </gresources>

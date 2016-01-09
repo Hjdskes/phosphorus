@@ -1,6 +1,6 @@
 /* Utilities
  *
- * Copyright (C) 2015 Jente Hidskes
+ * Copyright (C) 2015-2016 Jente Hidskes
  *
  * Author: Jente Hidskes <hjdskes@gmail.com>
  *
@@ -25,6 +25,8 @@
 G_BEGIN_DECLS
 
 gboolean ph_file_is_image (const gchar *file);
+void ph_get_plugin_dirs (gchar **plugin_dir, gchar **plugin_data_dir);
+void ph_get_user_dir (gchar **user_dir);
 
 G_END_DECLS
 

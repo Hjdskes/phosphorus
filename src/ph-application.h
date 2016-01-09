@@ -1,6 +1,6 @@
 /* PhApplication
  *
- * Copyright (C) 2015 Jente Hidskes
+ * Copyright (C) 2015-2016 Jente Hidskes
  *
  * Author: Jente Hidskes <hjdskes@gmail.com>
  *
@@ -48,5 +48,7 @@ GType          ph_application_get_type (void);
 
 PhApplication *ph_application_new (void);
 
+void           ph_application_proxy_plugin (PhApplication *application,
+					    const gchar   *filepath);
 G_END_DECLS
 

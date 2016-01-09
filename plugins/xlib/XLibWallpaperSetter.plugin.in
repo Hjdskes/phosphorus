@@ -1,0 +1,8 @@
+[Plugin]
+_Name=XLib Wallpaper Setter
+_Description=Set the wallpaper using XLib
+Authors=Jente Hidskes
+Copyright=Copyright © 2016 Jente Hidskes
+Website=https://unia.github.io/phosphorus
+Icon=x
+Module=xlibwallpapersetter

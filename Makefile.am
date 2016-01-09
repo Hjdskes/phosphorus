@@ -1,12 +1,13 @@
-SUBDIRS = \
-	data \
-	po \
-	src
+SUBDIRS = data src plugins po
+
+AM_CFLAGS = -std=c99 -Wall -Werror -Werror-implicit-function-declaration -Werror=format-security \
+	-Wformat -Wformat-security -Wundef -Wstrict-prototypes -Wno-conversion -Wunreachable-code \
+	-fno-common -fstack-protector
 
 EXTRA_DIST = \
-	${srcdir}/AUTHORS \
-	${srcdir}/LICENSE \
-	${srcdir}/README.md
+	AUTHORS \
+	LICENSE \
+	README.md
 
 DISTCLEANFILES = \
 	intltool-extract \
@@ -14,20 +15,11 @@ DISTCLEANFILES = \
 	intltool-update
 
 MAINTAINERCLEANFILES = \
-	${srcdir}/aclocal.m4 \
-	${srcdir}/compile \
-	${srcdir}/config.guess \
-	${srcdir}/config.h.in \
-	${srcdir}/config.h.in~ \
-	${srcdir}/config.log \
-	${srcdir}/config.status \
-	${srcdir}/config.sub \
-	${srcdir}/depcomp \
-	${srcdir}/gtk-doc.make \
-	${srcdir}/install-sh \
-	${srcdir}/libtool \
-	${srcdir}/ltmain.sh \
-	${srcdir}/missing \
-	${srcdir}/mkinstalldirs \
-	${srcdir}/stamp-h1
+	$(GITIGNORE_MAINTAINERCLEANFILES_TOPLEVEL) \
+	$(GITIGNORE_MAINTAINERCLEANFILES_MAKEFILE_IN) \
+	$(GITIGNORE_MAINTAINERCLEANFILES_M4_LIBTOOL) \
+	config.* \
+	py-compile
+
+-include $(top_srcdir)/git.mk
 

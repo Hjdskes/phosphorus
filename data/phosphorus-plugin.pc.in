@@ -1,0 +1,14 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@/phosphorus-@PHOSPHORUS_API_VERSION@
+pluginsdir=@PHOSPHORUS_PLUGINS_LIBS_DIR@
+
+Name: Phosphorus
+Description: Phosphorus Plugin Library
+URL: @PACKAGE_URL@
+Version: @VERSION@
+Requires: libpeas-1.0 >= 1.0.0
+Libs: -L${libdir}
+Cflags: -I${includedir}
+

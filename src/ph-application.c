@@ -1,6 +1,6 @@
 /* PhApplication
  *
- * Copyright (C) 2015 Jente Hidskes
+ * Copyright (C) 2015-2016 Jente Hidskes
  *
  * Author: Jente Hidskes <hjdskes@gmail.com>
  *
@@ -24,12 +24,14 @@
 
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
+#include <libpeas/peas.h>
+
+#include <ph-plugin.h>
 
 #include "ph-application.h"
-#include "ph-backend.h"
-#include "ph-backend-gnome.h"
 #include "ph-thumbview.h"
 #include "ph-window.h"
+#include "util.h"
 
 #define SCHEMA "org.unia.phosphorus"
 #define KEY_DIRECTORIES "directories"
@@ -37,7 +39,8 @@
 
 struct _PhApplicationPrivate {
 	GSettings *settings;
-	PhBackend *backend;
+	PeasEngine *engine;
+	PeasExtensionSet *extensions;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PhApplication, ph_application, GTK_TYPE_APPLICATION);
@@ -136,7 +139,7 @@ ph_application_activate (GApplication *application)
 
 	directories = g_settings_get_strv (priv->settings, KEY_DIRECTORIES);
 	recurse = g_settings_get_enum (priv->settings, KEY_RECURSE);
-	window = ph_window_new (PH_APPLICATION (application), PH_BACKEND (priv->backend));
+	window = ph_window_new (PH_APPLICATION (application));
 	ph_window_scan_directories (window, recurse, directories);
 	g_strfreev (directories);
 
@@ -150,15 +153,9 @@ ph_application_dispose (GObject *object)
 
 	priv = ph_application_get_instance_private (PH_APPLICATION (object));
 
-	if (priv->settings) {
-		g_object_unref (priv->settings);
-		priv->settings = NULL;
-	}
-
-	if (priv->backend) {
-		g_object_unref (priv->backend);
-		priv->backend = NULL;
-	}
+	g_clear_object (&priv->settings);
+	g_clear_object (&priv->engine);
+	g_clear_object (&priv->extensions);
 
 	G_OBJECT_CLASS (ph_application_parent_class)->dispose (object);
 }
@@ -176,14 +173,73 @@ ph_application_class_init (PhApplicationClass *ph_application_class)
 }
 
 static void
-ph_application_init (PhApplication *application)
+require_phosphorus_typelib (void)
+{
+	gchar *typelib_dir;
+	GError *error = NULL;
+
+	typelib_dir = g_build_filename (LIB_DIR, "phosphorus", "girepository-1.0", NULL);
+
+	if (!g_irepository_require_private (g_irepository_get_default (),
+	                                    typelib_dir, "Phosphorus", "1.0", 0, &error)) {
+		g_warning (_("Could not load Phosphorus repository: %s"), error->message);
+		g_clear_error (&error);
+	}
+	g_free (typelib_dir);
+}
+
+static void
+add_plugin_dirs (PeasEngine *engine)
+{
+	gchar *user_dir;
+	gchar *plugin_dir;
+	gchar *plugin_data_dir;
+
+	ph_get_plugin_dirs (&plugin_dir, &plugin_data_dir);
+	peas_engine_add_search_path (engine, plugin_dir, plugin_data_dir);
+
+	ph_get_user_dir (&user_dir);
+	peas_engine_add_search_path (engine, user_dir, NULL);
+
+	g_free (user_dir);
+	g_free (plugin_dir);
+	g_free (plugin_data_dir);
+}
+
+static void
+init_peas (PhApplication *application)
 {
 	PhApplicationPrivate *priv;
 
 	priv = ph_application_get_instance_private (application);
 
-	/* TODO: decide which one when building Phosphorus? */
-	priv->backend = ph_backend_gnome_new ();
+	priv->engine = peas_engine_get_default ();
+	/* Require our own typelib, see gedit-plugin-engine.c. */
+	require_phosphorus_typelib ();
+	/* FIXME: Does this interfere with other PeasEngines? See enable_loader
+	 * documentation. */
+	peas_engine_enable_loader (priv->engine, "python3");
+	/* Add Phosphorus and user directory plugins. */
+	add_plugin_dirs (priv->engine);
+	peas_engine_rescan_plugins (priv->engine);
+
+	priv->extensions = peas_extension_set_new (priv->engine, PH_TYPE_PLUGIN, NULL);
+
+	/* Load all plugins that were found. FIXME: disable apply button when no plugins are found. */
+	const GList *plugins = peas_engine_get_plugin_list (priv->engine);
+	for (const GList *plugin = plugins; plugin != NULL; plugin = plugin->next) {
+		PeasPluginInfo *info = plugin->data;
+		if (!peas_engine_load_plugin (priv->engine, info)) {
+			const gchar *name = peas_plugin_info_get_name (info);
+			g_printerr (_("Could not load plugin %s\n"), name);
+		}
+	}
+}
+
+static void
+ph_application_init (PhApplication *application)
+{
+	init_peas (application);
 }
 
 PhApplication *
@@ -197,5 +253,35 @@ ph_application_new (void)
 				    NULL);
 
 	return PH_APPLICATION (application);
+}
+
+// FIXME: perhaps PhWindow should have the filepath of the currently selected image as a property,
+// with a signal whenever that property changes. PhApplication could then instead connect to this
+// signal. This signal can then be ignored when no plugins are registered.
+void
+ph_application_proxy_plugin (PhApplication *application, const gchar *filepath)
+{
+	PhApplicationPrivate *priv;
+	PeasPluginInfo *info;
+	PeasExtension *extension;
+	const GList *list;
+
+	g_return_if_fail (application != NULL);
+	g_return_if_fail (filepath != NULL);
+
+	priv = ph_application_get_instance_private (application);
+	list = peas_engine_get_plugin_list (priv->engine);
+	/* FIXME: If apply is disabled when no plugins, this can go. Currently here to prevent a
+	 * segault only. */
+	if (list == NULL) {
+		g_printerr (_("No plugins found. Can't apply wallpaper\n"));
+		return;
+	}
+
+	/* Apply the first plugin. FIXME: in the future, we should make sure only one plugin is
+	 * active at once. */
+	info = PEAS_PLUGIN_INFO (list->data);
+	extension = peas_extension_set_get_extension (priv->extensions, info);
+	ph_plugin_set_background (PH_PLUGIN (extension), filepath);
 }
 

@@ -1,6 +1,6 @@
 /* Utilities
  *
- * Copyright (C) 2015 Jente Hidskes
+ * Copyright (C) 2015-2016 Jente Hidskes
  *
  * Author: Jente Hidskes <hjdskes@gmail.com>
  *
@@ -45,5 +45,21 @@ ph_file_is_image (const gchar *file)
 	}
 
 	return FALSE;
+}
+
+void
+ph_get_plugin_dirs (gchar **plugin_dir, gchar **plugin_data_dir)
+{
+	*plugin_dir = g_build_filename (LIB_DIR, "phosphorus", "plugins", NULL);
+	*plugin_data_dir = g_build_filename (DATA_DIR, "phosphorus", "plugins", NULL);
+}
+
+void
+ph_get_user_dir (gchar **user_dir)
+{
+	const gchar *user_data_dir;
+
+	user_data_dir = g_get_user_data_dir ();
+	*user_dir = g_build_filename (user_data_dir, "phosphorus", "plugins", NULL);
 }
 

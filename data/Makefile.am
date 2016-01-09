@@ -1,28 +1,46 @@
+# Desktop file
 @INTLTOOL_DESKTOP_RULE@
-DESKTOP_IN_FILES = phosphorus.desktop.in.in
-DESKTOP_FILES = $(DESKTOP_IN_FILES:.desktop.in.in=.desktop)
-
+desktop_in_files = phosphorus.desktop.in.in
 desktopdir = $(datadir)/applications
-desktop_DATA = $(DESKTOP_FILES)
+desktop_DATA = $(desktop_in_files:.desktop.in.in=.desktop)
 
-gsettings_SCHEMAS = org.unia.phosphorus.gschema.xml
+# GSettings schemas
 @GSETTINGS_RULES@
+gsettings_in_files = org.unia.phosphorus.gschema.xml.in
+gsettings_SCHEMAS = $(gsettings_in_files:.xml.in=.xml)
+
+# Pkgconfig file
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = phosphorus-plugin.pc
+
+# Resource files
+GRESDEPS = $1 $(shell $(GLIB_COMPILE_RESOURCES) --generate-dependencies --sourcedir $(dir $1) $1)
+GRESGEN = $(AM_V_GEN) $(GLIB_COMPILE_RESOURCES) --target="$@" --sourcedir="$(dir $<)" --generate-source "$<"
+
+phosphorus_resource_deps = $(call GRESDEPS,phosphorus.gresource.xml)
+phosphorus-resources.c: $(phosphorus_resource_deps)
+	$(GRESGEN)
+
+BUILT_SOURCES = phosphorus-resources.c
 
 EXTRA_DIST = \
-	$(DESKTOP_IN_FILES) \
+	$(desktop_in_files) \
+	$(gsettings_in_files) \
+	phosphorus.gresource.xml \
+	$(phosphorus_resource_deps) \
+	phosphorus-plugin.pc.in
+
+CLEANFILES = \
 	$(gsettings_SCHEMAS) \
-	phosphorus.gresource.xml
-
-resource_files = $(shell $(GLIB_COMPILE_RESOURCES) --sourcedir=$(top_srcdir)/data --generate-dependencies $(top_srcdir)/data/phosphorus.gresource.xml)
-
-BUILT_SOURCES = \
-	phosphorus-resources.h \
-	phosphorus-resources.c
-
-phosphorus-resources.h: $(top_srcdir)/data/phosphorus.gresource.xml $(resource_files)
-	glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-header --c-name phosphorus $<
-phosphorus-resources.c: $(top_srcdir)/data/phosphorus.gresource.xml $(resource_files)
-	glib-compile-resources --target=$@ --sourcedir=$(srcdir) --generate-source --c-name phosphorus $<
+	$(BUILT_SOURCES)
 
 DISTCLEANFILES = \
-	$(DESKTOP_FILES)
+	$(desktop_DATA) \
+	$(gsettings_SCHEMAS) \
+	$(BUILT_SOURCES)
+
+MAINTAINERCLEANFILES = \
+	$(gsettings_in_files:.xml.in=.valid)
+
+-include $(top_srcdir)/git.mk
+

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schemalist gettext-domain="phosphorus">
+<schemalist gettext-domain="@GETTEXT_PACKAGE@">
   <!-- Synced with PhRecurseType in src/ph-thumbview.h -->
   <enum id="org.unia.phosphorus.recursion">
     <value nick="no-recurse" value="0"/>

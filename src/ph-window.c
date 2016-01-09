@@ -1,6 +1,6 @@
 /* PhWindow
  *
- * Copyright (C) 2015 Jente Hidskes
+ * Copyright (C) 2015-2016 Jente Hidskes
  *
  * Author: Jente Hidskes <hjdskes@gmail.com>
  *
@@ -25,23 +25,15 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 
-#include "ph-backend.h"
 #include "ph-thumbview.h"
 #include "ph-window.h"
 
 /* Copyright years. */
-#define COPYRIGHT "2015"
-
-enum {
-	PROP_0,
-	PROP_BACKEND,
-};
+#define COPYRIGHT "2015-2016"
 
 struct _PhWindowPrivate {
 	GtkWidget *headerbar;
 	PhThumbview *thumbview;
-
-	PhBackend *backend;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PhWindow, ph_window, GTK_TYPE_APPLICATION_WINDOW);
@@ -65,11 +57,12 @@ static const GActionEntry window_actions[] = {
 static void
 ph_window_thumbview_activated (PhThumbview *thumbview, const gchar *filepath, gpointer user_data)
 {
-	PhWindowPrivate *priv;
+	PhApplication *application;
 
-	priv = ph_window_get_instance_private (user_data);
-
-	ph_backend_set_background (PH_BACKEND (priv->backend), filepath);
+	/* FIXME: quite a waste to retrieve the same application all the time. */
+	g_object_get (user_data, "application", &application, NULL);
+	ph_application_proxy_plugin (application, filepath);
+	g_object_unref (application);
 }
 
 static void
@@ -87,63 +80,9 @@ ph_window_thumbview_selection_changed (PhThumbview *thumbview, gpointer user_dat
 }
 
 static void
-ph_window_get_property (GObject    *object,
-			guint       property_id,
-			GValue     *value,
-			GParamSpec *pspec)
-{
-	PhWindowPrivate *priv;
-
-	priv = ph_window_get_instance_private (PH_WINDOW (object));
-
-	switch (property_id) {
-	case PROP_BACKEND:
-		g_value_set_object (value, priv->backend);
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-	}
-}
-
-static void
-ph_window_set_property (GObject      *object,
-			guint	 property_id,
-			const GValue *value,
-			GParamSpec   *pspec)
-{
-	PhWindowPrivate *priv;
-
-	priv = ph_window_get_instance_private (PH_WINDOW (object));
-
-	switch (property_id) {
-	case PROP_BACKEND:
-		priv->backend = g_value_get_object (value);
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-	}
-}
-
-static void
 ph_window_class_init (PhWindowClass *ph_window_class)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (ph_window_class);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (ph_window_class);
-
-	object_class->get_property = ph_window_get_property;
-	object_class->set_property = ph_window_set_property;
-
-	g_object_class_install_property (object_class, PROP_BACKEND,
-			g_param_spec_object ("backend",
-					     "The backend used to set the wallpaper",
-					     "The backend used to set the wallpaper",
-					     PH_TYPE_BACKEND,
-					     G_PARAM_WRITABLE |
-					     G_PARAM_CONSTRUCT_ONLY |
-					     G_PARAM_PRIVATE |
-					     G_PARAM_STATIC_NAME |
-					     G_PARAM_STATIC_NICK |
-					     G_PARAM_STATIC_BLURB));
 
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/unia/phosphorus/window.ui");
 
@@ -175,14 +114,12 @@ ph_window_init (PhWindow *window)
 }
 
 PhWindow *
-ph_window_new (PhApplication *application, PhBackend *backend)
+ph_window_new (PhApplication *application)
 {
 	g_return_val_if_fail (PH_IS_APPLICATION (application), NULL);
-	g_return_val_if_fail (PH_IS_BACKEND (backend), NULL);
 
 	return g_object_new (PH_TYPE_WINDOW,
 			     "application", application,
-			     "backend", backend,
 			     NULL);
 }
 

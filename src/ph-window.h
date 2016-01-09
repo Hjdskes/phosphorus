@@ -1,6 +1,6 @@
 /* PhWindow
  *
- * Copyright (C) 2015 Jente Hidskes
+ * Copyright (C) 2015-2016 Jente Hidskes
  *
  * Author: Jente Hidskes <hjdskes@gmail.com>
  *
@@ -23,7 +23,6 @@
 #include <gtk/gtk.h>
 
 #include "ph-application.h"
-#include "ph-backend.h"
 #include "ph-thumbview.h"
 
 G_BEGIN_DECLS
@@ -49,7 +48,7 @@ struct _PhWindowClass {
 
 GType     ph_window_get_type (void);
 
-PhWindow *ph_window_new (PhApplication *application, PhBackend *backend);
+PhWindow *ph_window_new (PhApplication *application);
 
 void      ph_window_show_about_dialog (PhWindow *window);
 
