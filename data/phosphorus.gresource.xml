@@ -4,6 +4,7 @@
     <!-- Using this alias, GtkApplication will automatically pick it up for us. -->
     <file alias="gtk/menus.ui" preprocess="xml-stripblanks">ui/menus.ui</file>
     <!-- Use these aliases to make the source code agnostic to the file tree. -->
+    <file alias="preferences.ui" preprocess="xml-stripblanks">ui/preferences.ui</file>
     <file alias="thumbview.ui" preprocess="xml-stripblanks">ui/thumbview.ui</file>
     <file alias="window.ui" preprocess="xml-stripblanks">ui/window.ui</file>
   </gresource>

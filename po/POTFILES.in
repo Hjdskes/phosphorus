@@ -4,12 +4,14 @@
 [type: gettext/gsettings]data/org.unia.phosphorus.gschema.xml
 data/phosphorus.desktop.in.in
 [type: gettext/glade]data/ui/menus.ui
+[type: gettext/glade]data/ui/preferences.ui
 plugins/gnome/GnomeWallpaperSetter.plugin.in
 plugins/gnome/__init__.py
 plugins/xlib/XLibWallpaperSetter.plugin.in
 plugins/xlib/XLibWallpaperSetter.c
 src/main.c
 src/ph-application.c
+src/ph-preferences-dialog.c
 src/ph-thumbview.c
 src/ph-window.c
 src/plugin/ph-plugin.c

@@ -12,6 +12,8 @@ phosphorus_SOURCES = \
 	../data/phosphorus-resources.c \
 	ph-application.c \
 	ph-application.h \
+	ph-preferences-dialog.c \
+	ph-preferences-dialog.h \
 	ph-thumbview.c \
 	ph-thumbview.h \
 	ph-window.c \

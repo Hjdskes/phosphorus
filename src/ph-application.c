@@ -29,6 +29,7 @@
 #include <ph-plugin.h>
 
 #include "ph-application.h"
+#include "ph-preferences-dialog.h"
 #include "ph-thumbview.h"
 #include "ph-window.h"
 #include "util.h"
@@ -50,7 +51,11 @@ ph_application_action_preferences (GSimpleAction *action,
 				   GVariant      *parameter,
 				   gpointer       user_data)
 {
-	g_print ("Preferences\n");
+	GtkApplication *application = GTK_APPLICATION (user_data);
+	PhWindow *window;
+
+	window = PH_WINDOW (gtk_application_get_active_window (application));
+	ph_preferences_dialog_show (window);
 }
 
 static void
