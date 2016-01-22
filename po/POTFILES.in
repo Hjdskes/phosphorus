@@ -11,6 +11,7 @@ plugins/xlib/XLibWallpaperSetter.plugin.in
 plugins/xlib/XLibWallpaperSetter.c
 src/main.c
 src/ph-application.c
+src/ph-plugin-manager.c
 src/ph-preferences-dialog.c
 src/ph-thumbview.c
 src/ph-window.c

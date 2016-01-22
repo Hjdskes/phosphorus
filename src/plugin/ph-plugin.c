@@ -25,6 +25,8 @@
 #include <glib-object.h>
 #include <glib/gi18n.h>
 
+#include <ph-application.h>
+
 #include "ph-plugin.h"
 
 /**
@@ -32,14 +34,68 @@
  * @short_description: Interface for Phosphorus plugins
  *
  * #PhPlugin is an interface which all plugins to Phosphorus must implement.
- * It defines only one method, which is called by Phosphorus when the apply
- * button is clicked by the user.
  */
 G_DEFINE_INTERFACE (PhPlugin, ph_plugin, G_TYPE_OBJECT);
 
 static void
 ph_plugin_default_init (PhPluginInterface *interface)
 {
+	/**
+	 * PhPlugin:application:
+	 *
+	 * The application property contains the Phosphorus application that this #PhPlugin is
+	 * active for.
+	 */
+	g_object_interface_install_property (interface,
+					     g_param_spec_object ("application",
+								  "Application",
+								  "The Phosphorus application",
+								  PH_TYPE_APPLICATION,
+								  G_PARAM_READWRITE |
+								  G_PARAM_CONSTRUCT_ONLY |
+								  G_PARAM_STATIC_STRINGS));
+}
+
+/**
+ * ph_plugin_load:
+ * @plugin: (skip): The #PhPlugin whose #ph_plugin_load to call.
+ *
+ * Loads the plugin on the application.
+ */
+void
+ph_plugin_load (PhPlugin *plugin)
+{
+	PhPluginInterface *interface = NULL;
+
+	g_return_if_fail (PH_IS_PLUGIN (plugin));
+
+	interface = PH_PLUGIN_GET_IFACE (plugin);
+	if (interface && interface->load) {
+		interface->load (plugin);
+	} else {
+		g_printerr (_("Plugin does not define load!\n"));
+	}
+}
+
+/**
+ * ph_plugin_unload:
+ * @plugin: (skip): The #PhPlugin whose #ph_plugin_unload to call.
+ *
+ * Unloads the plugin on the application.
+ */
+void
+ph_plugin_unload (PhPlugin *plugin)
+{
+	PhPluginInterface *interface = NULL;
+
+	g_return_if_fail (PH_IS_PLUGIN (plugin));
+
+	interface = PH_PLUGIN_GET_IFACE (plugin);
+	if (interface && interface->unload) {
+		interface->unload (plugin);
+	} else {
+		g_printerr (_("Plugin does not define unload!\n"));
+	}
 }
 
 // FIXME: (not nullable) is not recognized. Documentation is outdated?

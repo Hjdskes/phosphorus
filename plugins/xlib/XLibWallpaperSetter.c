@@ -33,13 +33,20 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
+#include <ph-application.h>
 #include <plugin/ph-plugin.h>
 
 #include "XLibWallpaperSetter.h"
 
+enum {
+	PROP_0,
+	PROP_APPLICATION,
+};
+
 static void ph_plugin_interface_init (PhPluginInterface *interface);
 
 struct _XLibWallpaperSetterPrivate {
+	PhApplication *application;
 	Display *display;
 };
 
@@ -200,11 +207,65 @@ end:
 }
 
 static void
+xlib_wallpaper_setter_load (PhPlugin *plugin)
+{
+	g_print("load\n");
+}
+
+static void
+xlib_wallpaper_setter_unload (PhPlugin *plugin)
+{
+	g_print("unload\n");
+}
+
+static void
+xlib_wallpaper_setter_set_property (GObject      *object,
+                                    guint         prop_id,
+                                    const GValue *value,
+                                    GParamSpec   *pspec)
+{
+	XLibWallpaperSetterPrivate *priv;
+
+	priv = xlib_wallpaper_setter_get_instance_private (XLIB_WALLPAPER_SETTER (object));
+
+	switch (prop_id) {
+		case PROP_APPLICATION:
+			priv->application = PH_APPLICATION (g_value_dup_object (value));
+			break;
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
+xlib_wallpaper_setter_get_property (GObject    *object,
+                                    guint       prop_id,
+                                    GValue     *value,
+                                    GParamSpec *pspec)
+{
+	XLibWallpaperSetterPrivate *priv;
+
+	priv = xlib_wallpaper_setter_get_instance_private (XLIB_WALLPAPER_SETTER (object));;
+
+	switch (prop_id) {
+		case PROP_APPLICATION:
+			g_value_set_object (value, priv->application);
+			break;
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
 xlib_wallpaper_setter_dispose (GObject *object)
 {
 	XLibWallpaperSetterPrivate *priv;
 
 	priv = xlib_wallpaper_setter_get_instance_private (XLIB_WALLPAPER_SETTER (object));
+
+	g_clear_object (&priv->application);
 
 	if (priv->display) {
 		XCloseDisplay (priv->display);
@@ -224,7 +285,11 @@ xlib_wallpaper_setter_class_init (XLibWallpaperSetterClass *xlib_wallpaper_sette
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (xlib_wallpaper_setter_class);
 
+	object_class->set_property = xlib_wallpaper_setter_set_property;
+	object_class->get_property = xlib_wallpaper_setter_get_property;
 	object_class->dispose = xlib_wallpaper_setter_dispose;
+
+	g_object_class_override_property (object_class, PROP_APPLICATION, "application");
 }
 
 static void
@@ -245,6 +310,8 @@ xlib_wallpaper_setter_init (XLibWallpaperSetter *xlib_wallpaper_setter)
 static void
 ph_plugin_interface_init (PhPluginInterface *interface)
 {
+	interface->load = xlib_wallpaper_setter_load;
+	interface->unload = xlib_wallpaper_setter_unload;
 	interface->set_background = xlib_wallpaper_setter_set_background;
 }
 

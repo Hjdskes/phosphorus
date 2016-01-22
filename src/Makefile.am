@@ -1,5 +1,3 @@
-SUBDIRS = plugin
-
 -include $(top_srcdir)/common.mk
 -include $(top_srcdir)/git.mk
 
@@ -23,6 +21,7 @@ phosphorus_LDADD = \
 phosphorus_LDFLAGS = \
 	-export-dynamic -no-undefined
 
+# FIXME: do not actually install .la file?
 pkglib_LTLIBRARIES = \
 	libphosphorus.la
 
@@ -53,12 +52,14 @@ libphosphorus_la_LDFLAGS = \
 libphosphorus_c_files = \
 	../data/phosphorus-resources.c \
 	ph-application.c \
+	ph-plugin-manager.c \
 	ph-preferences-dialog.c \
 	ph-thumbview.c \
 	ph-window.c \
 	util.c
 
 libphosphorus_NOINST_H_FILES = \
+	ph-plugin-manager.h \
 	ph-preferences-dialog.h \
 	ph-thumbview.h \
 	ph-window.h \
@@ -66,4 +67,6 @@ libphosphorus_NOINST_H_FILES = \
 
 libphosphorus_INST_H_FILES = \
 	ph-application.h
+
+include plugin/Makefile.am
 

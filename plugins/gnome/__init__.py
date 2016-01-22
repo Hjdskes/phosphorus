@@ -25,9 +25,26 @@ class GnomeWallpaperSetter(GObject.Object, Phosphorus.Plugin):
     """
     __gtype_name__ = 'GnomeWallpaperSetter'
 
+    application = GObject.Property(type=Phosphorus.Application)
+
     def __init__(self):
         GObject.Object.__init__(self)
         self._settings = Gio.Settings.new("org.gnome.desktop.background")
+
+    def do_load(self):
+        """
+        This method is called by Phosphorus when the plugin is loaded. It is used to add widgets
+        to Phosphorus' UI, enabling this plugin to set some of GNOME Shell's other wallpaper
+        settings.
+        """
+        print("load")
+
+    def do_unload(self):
+        """
+        This method is called by Phosphorus when the plugin is unloaded. It reverses everything
+        done by the do_load method.
+        """
+        print("unload")
 
     def do_set_background(self, filepath: str):
         """
