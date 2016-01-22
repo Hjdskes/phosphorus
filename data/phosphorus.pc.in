@@ -2,13 +2,12 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@/phosphorus-@PHOSPHORUS_API_VERSION@
-pluginsdir=@PHOSPHORUS_PLUGINS_LIBS_DIR@
 
 Name: Phosphorus
-Description: Phosphorus Plugin Library
+Description: Phosphorus Internal Library
 URL: @PACKAGE_URL@
 Version: @VERSION@
-Requires: libpeas-1.0 >= @LIBPEAS_REQUIRED@
+Requires: gtk+-3.0 >= @GTK_REQUIRED@ gdk-pixbuf-2.0 >= @GDKPIXBUF_REQUIRED@
 Libs: -L${libdir}
 Cflags: -I${includedir}
 

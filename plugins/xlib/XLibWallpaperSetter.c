@@ -33,7 +33,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
-#include <ph-plugin.h>
+#include <plugin/ph-plugin.h>
 
 #include "XLibWallpaperSetter.h"
 

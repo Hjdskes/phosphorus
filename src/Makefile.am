@@ -6,38 +6,64 @@ SUBDIRS = plugin
 bin_PROGRAMS = \
 	phosphorus
 
-# FIXME: make dist fails here:
-#        No rule to make target '../data/phosphorus-resources.c', needed by 'distdir'.
 phosphorus_SOURCES = \
-	../data/phosphorus-resources.c \
-	ph-application.c \
-	ph-application.h \
-	ph-preferences-dialog.c \
-	ph-preferences-dialog.h \
-	ph-thumbview.c \
-	ph-thumbview.h \
-	ph-window.c \
-	ph-window.h \
-	util.c \
-	util.h \
 	main.c
 
 phosphorus_CPPFLAGS = \
+	-DLOCALE_DIR=\"$(localedir)\"
+
+phosphorus_CFLAGS = \
+	$(PHOSPHORUS_BASE_CFLAGS) \
+	$(AM_CFLAGS)
+
+phosphorus_LDADD = \
+	libphosphorus.la \
+	plugin/libphosphorus-plugin.la
+
+phosphorus_LDFLAGS = \
+	-export-dynamic -no-undefined
+
+pkglib_LTLIBRARIES = \
+	libphosphorus.la
+
+libphosphorus_la_SOURCES = \
+	$(libphosphorus_c_files) \
+	$(libphosphorus_NOINST_H_FILES) \
+	$(libphosphorus_INST_H_FILES)
+
+libphosphorus_la_CPPFLAGS = \
 	-Iplugin \
-	-DLOCALE_DIR=\"$(localedir)\" \
 	-DDATA_DIR=\"$(datadir)\" \
 	-DLIB_DIR=\"$(libdir)\"
 
-phosphorus_CFLAGS = \
+libphosphorus_la_CFLAGS = \
 	$(PHOSPHORUS_BASE_CFLAGS) \
 	$(PHOSPHORUS_PLUGIN_CFLAGS) \
 	$(AM_CFLAGS)
 
-phosphorus_LDADD = \
-	plugin/libphosphorus-plugin.la \
+libphosphorus_la_LIBADD = \
 	$(PHOSPHORUS_BASE_LIBS) \
 	$(PHOSPHORUS_PLUGIN_LIBS)
 
-phosphorus_LDFLAGS = \
-	-export-dynamic -no-undefined
+libphosphorus_la_LDFLAGS = \
+	-avoid-version -export-dynamic -no-undefined -export-symbols-regex "^ph_.*"
+
+# FIXME: make dist fails here:
+#        No rule to make target '../data/phosphorus-resources.c', needed by 'distdir'.
+libphosphorus_c_files = \
+	../data/phosphorus-resources.c \
+	ph-application.c \
+	ph-preferences-dialog.c \
+	ph-thumbview.c \
+	ph-window.c \
+	util.c
+
+libphosphorus_NOINST_H_FILES = \
+	ph-preferences-dialog.h \
+	ph-thumbview.h \
+	ph-window.h \
+	util.h
+
+libphosphorus_INST_H_FILES = \
+	ph-application.h
 

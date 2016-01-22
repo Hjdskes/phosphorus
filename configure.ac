@@ -72,11 +72,11 @@ AC_CONFIG_FILES(Makefile
 		data/Makefile
 		data/org.unia.phosphorus.gschema.xml
 		data/phosphorus.desktop.in
+		data/phosphorus.pc
 		data/phosphorus-plugin.pc
 		plugins/Makefile
 		po/Makefile.in
-		src/Makefile
-		src/plugin/Makefile)
+		src/Makefile)
 
 AC_OUTPUT
 

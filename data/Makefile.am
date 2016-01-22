@@ -11,7 +11,9 @@ gsettings_SCHEMAS = $(gsettings_in_files:.xml.in=.xml)
 
 # Pkgconfig file
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = phosphorus-plugin.pc
+pkgconfig_DATA = \
+	phosphorus.pc \
+	phosphorus-plugin.pc
 
 # Resource files
 GRESDEPS = $1 $(shell $(GLIB_COMPILE_RESOURCES) --generate-dependencies --sourcedir $(dir $1) $1)
@@ -28,6 +30,7 @@ EXTRA_DIST = \
 	$(gsettings_in_files) \
 	phosphorus.gresource.xml \
 	$(phosphorus_resource_deps) \
+	phosphorus.pc.in \
 	phosphorus-plugin.pc.in
 
 CLEANFILES = \
