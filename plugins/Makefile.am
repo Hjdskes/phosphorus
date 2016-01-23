@@ -35,5 +35,6 @@ EXTRA_DIST = \
 	$(plugin_gsettings_SCHEMAS:%.gschema.xml=%.gschema.xml.in) \
 	$(dist_plugin_gsettings_SCHEMAS:%.gschema.xml=%.gschema.xml.in)
 
+-include $(top_srcdir)/common.mk
 -include $(top_srcdir)/git.mk
 

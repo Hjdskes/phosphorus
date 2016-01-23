@@ -51,7 +51,7 @@ struct _PhThumbviewPrivate {
 	GtkListStore *store;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (PhThumbview, ph_thumbview, GTK_TYPE_SCROLLED_WINDOW);
+G_DEFINE_TYPE_WITH_PRIVATE (PhThumbview, ph_thumbview, GTK_TYPE_SCROLLED_WINDOW)
 
 static void
 ph_thumbview_add_image (PhThumbview *thumbview, const gchar *file)
@@ -83,7 +83,7 @@ ph_thumbview_add_image (PhThumbview *thumbview, const gchar *file)
 }
 
 static void
-ph_thumbview_item_activated (GtkIconView *iconview, GtkTreePath *path, gpointer user_data)
+ph_thumbview_item_activated (UNUSED GtkIconView *iconview, GtkTreePath *path, gpointer user_data)
 {
 	PhThumbview *thumbview = PH_THUMBVIEW (user_data);
 	PhThumbviewPrivate *priv;
@@ -103,7 +103,7 @@ ph_thumbview_item_activated (GtkIconView *iconview, GtkTreePath *path, gpointer 
 }
 
 static void
-ph_thumbview_selection_changed (GtkIconView *iconview, gpointer user_data)
+ph_thumbview_selection_changed (UNUSED GtkIconView *iconview, gpointer user_data)
 {
 	g_signal_emit (PH_THUMBVIEW (user_data), signals[SIGNAL_SELECTION_CHANGED], 0);
 }

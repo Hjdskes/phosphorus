@@ -82,10 +82,10 @@ add_plugin_dirs (PeasEngine *engine)
 }
 
 static void
-set_background (PeasExtensionSet *extensions,
-		PeasPluginInfo   *info,
-		PeasExtension    *extension,
-		gpointer          user_data)
+set_background (UNUSED PeasExtensionSet *extensions,
+		UNUSED PeasPluginInfo   *info,
+		PeasExtension           *extension,
+		gpointer                 user_data)
 {
 	const gchar *filepath = (const gchar *) user_data;
 
@@ -93,19 +93,19 @@ set_background (PeasExtensionSet *extensions,
 }
 
 static void
-extension_added (PeasExtensionSet *extensions,
-		 PeasPluginInfo   *info,
-		 PeasExtension    *extension,
-		 gpointer          user_data)
+extension_added (UNUSED PeasExtensionSet *extensions,
+		 UNUSED PeasPluginInfo   *info,
+		 PeasExtension           *extension,
+		 UNUSED gpointer          user_data)
 {
 	ph_plugin_load (PH_PLUGIN (extension));
 }
 
 static void
-extension_removed (PeasExtensionSet *extensions,
-		   PeasPluginInfo   *info,
-		   PeasExtension    *extension,
-		   gpointer          user_data)
+extension_removed (UNUSED PeasExtensionSet *extensions,
+		   UNUSED PeasPluginInfo   *info,
+		   PeasExtension           *extension,
+		   UNUSED gpointer          user_data)
 {
 	ph_plugin_unload (PH_PLUGIN (extension));
 }
@@ -221,9 +221,6 @@ ph_plugin_manager_get_default (PhApplication *application)
 void
 ph_plugin_manager_proxy_plugins (PhPluginManager *manager, const gchar *filepath)
 {
-	PeasPluginInfo *info;
-	PeasExtension *extension;
-
 	g_return_if_fail (PH_IS_PLUGIN_MANAGER (manager));
 	g_return_if_fail (filepath != NULL);
 

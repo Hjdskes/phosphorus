@@ -35,7 +35,7 @@
  *
  * #PhPlugin is an interface which all plugins to Phosphorus must implement.
  */
-G_DEFINE_INTERFACE (PhPlugin, ph_plugin, G_TYPE_OBJECT);
+G_DEFINE_INTERFACE (PhPlugin, ph_plugin, G_TYPE_OBJECT)
 
 static void
 ph_plugin_default_init (PhPluginInterface *interface)

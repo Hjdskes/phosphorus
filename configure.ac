@@ -11,6 +11,8 @@ PYGOBJECT_REQUIRED=3.0.0
 AC_SUBST(PHOSPHORUS_API_VERSION, 1.0)
 
 AC_CONFIG_HEADERS(config.h)
+AC_DEFINE_UNQUOTED(UNUSED, [__attribute__ ((unused))], [Wrapper over __attribue__ ((unused))])
+
 AM_INIT_AUTOMAKE([1.11 foreign dist-xz no-dist-gzip subdir-objects -Wno-portability])
 AM_SILENT_RULES(yes)
 

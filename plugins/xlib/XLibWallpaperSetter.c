@@ -59,14 +59,19 @@ G_DEFINE_DYNAMIC_TYPE_EXTENDED (XLibWallpaperSetter,
 							       ph_plugin_interface_init))
 
 static void
-die (const gchar *msg, ...)
+warn (const gchar *msg, ...)
 {
 	va_list args;
 
 	va_start (args, msg);
 	vfprintf (stderr, msg, args);
 	va_end (args);
+}
 
+static void
+die (const gchar *msg, ...)
+{
+	warn (msg);
 	exit (EXIT_FAILURE);
 }
 
@@ -78,9 +83,9 @@ open_pixbuf (const gchar *filepath)
 
 	pixbuf = gdk_pixbuf_new_from_file (filepath, &error);
 	if (!pixbuf) {
-		g_printerr (_("Could not open pixbuf %s\n"), error->message);
+		warn (_("Could not open pixbuf %s\n"), error->message);
 		g_clear_error (&error);
-		die (NULL);
+		exit (EXIT_FAILURE);
 	}
 	return pixbuf;
 }
@@ -190,7 +195,8 @@ xlib_wallpaper_setter_set_background (PhPlugin *plugin, const gchar *filepath)
 	pixbuf_onto_pixmap (pixbuf, priv->display, screen, &pixmap, width, height);
 
 	if (!set_root_atoms (priv->display, root, pixmap)) {
-		die (_("Could not create atoms\n"));
+		warn (_("Could not create atoms\n"));
+		goto end;
 	}
 
 	XKillClient (priv->display, AllTemporary);
@@ -207,13 +213,13 @@ end:
 }
 
 static void
-xlib_wallpaper_setter_load (PhPlugin *plugin)
+xlib_wallpaper_setter_load (UNUSED PhPlugin *plugin)
 {
 	g_print("load\n");
 }
 
 static void
-xlib_wallpaper_setter_unload (PhPlugin *plugin)
+xlib_wallpaper_setter_unload (UNUSED PhPlugin *plugin)
 {
 	g_print("unload\n");
 }
@@ -276,7 +282,7 @@ xlib_wallpaper_setter_dispose (GObject *object)
 }
 
 static void
-xlib_wallpaper_setter_class_finalize (XLibWallpaperSetterClass *klass)
+xlib_wallpaper_setter_class_finalize (UNUSED XLibWallpaperSetterClass *klass)
 {
 }
 

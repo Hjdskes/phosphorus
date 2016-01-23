@@ -43,12 +43,12 @@ struct _PhWindowPrivate {
 	PhThumbview *thumbview;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (PhWindow, ph_window, GTK_TYPE_APPLICATION_WINDOW);
+G_DEFINE_TYPE_WITH_PRIVATE (PhWindow, ph_window, GTK_TYPE_APPLICATION_WINDOW)
 
 static void
-ph_window_action_apply (GSimpleAction *action,
-			GVariant      *parameter,
-			gpointer       user_data)
+ph_window_action_apply (UNUSED GSimpleAction *action,
+			UNUSED GVariant      *parameter,
+			gpointer              user_data)
 {
 	PhWindowPrivate *priv;
 
@@ -62,7 +62,9 @@ static const GActionEntry window_actions[] = {
 };
 
 static void
-ph_window_thumbview_activated (PhThumbview *thumbview, const gchar *filepath, gpointer user_data)
+ph_window_thumbview_activated (UNUSED PhThumbview *thumbview,
+			       const gchar        *filepath,
+			       gpointer            user_data)
 {
 	PhWindowPrivate *priv;
 
@@ -72,7 +74,7 @@ ph_window_thumbview_activated (PhThumbview *thumbview, const gchar *filepath, gp
 }
 
 static void
-ph_window_thumbview_selection_changed (PhThumbview *thumbview, gpointer user_data)
+ph_window_thumbview_selection_changed (UNUSED PhThumbview *thumbview, gpointer user_data)
 {
 	GAction *action;
 	gboolean enabled;

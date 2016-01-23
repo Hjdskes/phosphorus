@@ -44,12 +44,12 @@ struct _PhApplicationPrivate {
 	PhPluginManager *manager;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (PhApplication, ph_application, GTK_TYPE_APPLICATION);
+G_DEFINE_TYPE_WITH_PRIVATE (PhApplication, ph_application, GTK_TYPE_APPLICATION)
 
 static void
-ph_application_action_preferences (GSimpleAction *action,
-				   GVariant      *parameter,
-				   gpointer       user_data)
+ph_application_action_preferences (UNUSED GSimpleAction *action,
+				   UNUSED GVariant      *parameter,
+				   gpointer              user_data)
 {
 	GtkApplication *application = GTK_APPLICATION (user_data);
 	PhWindow *window;
@@ -59,9 +59,9 @@ ph_application_action_preferences (GSimpleAction *action,
 }
 
 static void
-ph_application_action_about (GSimpleAction *action,
-			     GVariant      *parameter,
-			     gpointer       user_data)
+ph_application_action_about (UNUSED GSimpleAction *action,
+			     UNUSED GVariant      *parameter,
+			     gpointer              user_data)
 {
 	GtkWindow *window;
 
@@ -72,9 +72,9 @@ ph_application_action_about (GSimpleAction *action,
 }
 
 static void
-ph_application_action_quit (GSimpleAction *action,
-			    GVariant      *parameter,
-			    gpointer       user_data)
+ph_application_action_quit (UNUSED GSimpleAction *action,
+			    UNUSED GVariant      *parameter,
+			    gpointer              user_data)
 {
 	GList *windows;
 
@@ -179,7 +179,7 @@ ph_application_class_init (PhApplicationClass *ph_application_class)
 }
 
 static void
-ph_application_init (PhApplication *application)
+ph_application_init (UNUSED PhApplication *application)
 {
 }
 

@@ -56,7 +56,7 @@ struct _PhPreferencesDialog {
 G_DEFINE_TYPE (PhPreferencesDialog, ph_preferences_dialog, GTK_TYPE_WINDOW)
 
 static void
-setup_phosphorus_page (PhPreferencesDialog *dialog)
+setup_phosphorus_page (UNUSED PhPreferencesDialog *dialog)
 {
 	// TODO: give contents.
 }
