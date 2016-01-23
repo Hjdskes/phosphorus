@@ -41,7 +41,7 @@
 
 struct _PhApplicationPrivate {
 	GSettings *settings;
-	PhPluginManager *plugins;
+	PhPluginManager *manager;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PhApplication, ph_application, GTK_TYPE_APPLICATION);
@@ -120,7 +120,7 @@ ph_application_startup (GApplication *application)
 
 	priv = ph_application_get_instance_private (PH_APPLICATION (application));
 
-	priv->plugins = ph_plugin_manager_get_default (PH_APPLICATION (application));
+	priv->manager = ph_plugin_manager_get_default (PH_APPLICATION (application));
 
 	// TODO: update live when new directory is added
 	priv->settings = g_settings_new (SCHEMA);
@@ -146,7 +146,7 @@ ph_application_activate (GApplication *application)
 
 	directories = g_settings_get_strv (priv->settings, KEY_DIRECTORIES);
 	recurse = g_settings_get_enum (priv->settings, KEY_RECURSE);
-	window = ph_window_new (PH_APPLICATION (application));
+	window = ph_window_new (PH_APPLICATION (application), priv->manager);
 	ph_window_scan_directories (window, recurse, directories);
 	g_strfreev (directories);
 
@@ -161,7 +161,7 @@ ph_application_dispose (GObject *object)
 	priv = ph_application_get_instance_private (PH_APPLICATION (object));
 
 	g_clear_object (&priv->settings);
-	g_clear_object (&priv->plugins);
+	g_clear_object (&priv->manager);
 
 	G_OBJECT_CLASS (ph_application_parent_class)->dispose (object);
 }
@@ -194,28 +194,5 @@ ph_application_new (void)
 				    NULL);
 
 	return PH_APPLICATION (application);
-}
-
-// FIXME: perhaps PhWindow should have the filepath of the currently selected image as a property,
-// with a signal whenever that property changes. PhApplication could then instead connect to this
-// signal. This signal can then be ignored when no plugins are registered.
-void
-ph_application_proxy_plugin (PhApplication *application, const gchar *filepath)
-{
-	PhApplicationPrivate *priv;
-	PhPlugin *plugin;
-
-	g_return_if_fail (application != NULL);
-	g_return_if_fail (filepath != NULL);
-
-	priv = ph_application_get_instance_private (application);
-
-	plugin = ph_plugin_manager_get_active_plugin (priv->plugins);
-	if (!plugin) {
-		g_printerr (_("No plugins found. Can't apply wallpaper\n"));
-		return;
-	}
-
-	ph_plugin_set_background (plugin, filepath);
 }
 

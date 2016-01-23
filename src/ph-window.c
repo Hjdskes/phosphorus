@@ -31,7 +31,14 @@
 /* Copyright years. */
 #define COPYRIGHT "2015-2016"
 
+enum {
+	PROP_0,
+	PROP_MANAGER,
+};
+
 struct _PhWindowPrivate {
+	PhPluginManager *manager;
+
 	GtkWidget *headerbar;
 	PhThumbview *thumbview;
 };
@@ -57,12 +64,11 @@ static const GActionEntry window_actions[] = {
 static void
 ph_window_thumbview_activated (PhThumbview *thumbview, const gchar *filepath, gpointer user_data)
 {
-	PhApplication *application;
+	PhWindowPrivate *priv;
 
-	/* FIXME: quite a waste to retrieve the same application all the time. */
-	g_object_get (user_data, "application", &application, NULL);
-	ph_application_proxy_plugin (application, filepath);
-	g_object_unref (application);
+	priv = ph_window_get_instance_private (PH_WINDOW (user_data));
+
+	ph_plugin_manager_proxy_plugins (priv->manager, filepath);
 }
 
 static void
@@ -80,9 +86,75 @@ ph_window_thumbview_selection_changed (PhThumbview *thumbview, gpointer user_dat
 }
 
 static void
+ph_window_set_property (GObject      *object,
+                        guint         prop_id,
+                        const GValue *value,
+                        GParamSpec   *pspec)
+{
+	PhWindowPrivate *priv;
+
+	priv = ph_window_get_instance_private (PH_WINDOW (object));
+
+	switch (prop_id) {
+		case PROP_MANAGER:
+			priv->manager = PH_PLUGIN_MANAGER (g_value_dup_object (value));
+			break;
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
+ph_window_get_property (GObject    *object,
+                        guint       prop_id,
+                        GValue     *value,
+                        GParamSpec *pspec)
+{
+	PhWindowPrivate *priv;
+
+	priv = ph_window_get_instance_private (PH_WINDOW (object));
+
+	switch (prop_id) {
+		case PROP_MANAGER:
+			g_value_set_object (value, priv->manager);
+			break;
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
+ph_window_dispose (GObject *object)
+{
+	PhWindowPrivate *priv;
+
+	priv = ph_window_get_instance_private (PH_WINDOW (object));
+
+	g_clear_object (&priv->manager);
+
+	G_OBJECT_CLASS (ph_window_parent_class)->dispose (object);
+}
+
+static void
 ph_window_class_init (PhWindowClass *ph_window_class)
 {
+	GObjectClass *object_class = G_OBJECT_CLASS (ph_window_class);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (ph_window_class);
+
+	object_class->set_property = ph_window_set_property;
+	object_class->get_property = ph_window_get_property;
+	object_class->dispose = ph_window_dispose;
+
+	g_object_class_install_property (object_class, PROP_MANAGER,
+					 g_param_spec_object ("plugin-manager",
+							      "PluginManager",
+							      "The Phosphorus plugin manager",
+							      PH_PLUGIN_MANAGER_TYPE,
+							      G_PARAM_READWRITE |
+							      G_PARAM_CONSTRUCT_ONLY |
+							      G_PARAM_STATIC_STRINGS));
 
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/unia/phosphorus/window.ui");
 
@@ -114,12 +186,14 @@ ph_window_init (PhWindow *window)
 }
 
 PhWindow *
-ph_window_new (PhApplication *application)
+ph_window_new (PhApplication *application, PhPluginManager *manager)
 {
 	g_return_val_if_fail (PH_IS_APPLICATION (application), NULL);
+	g_return_val_if_fail (PH_IS_PLUGIN_MANAGER (manager), NULL);
 
 	return g_object_new (PH_TYPE_WINDOW,
 			     "application", application,
+			     "plugin-manager", manager,
 			     NULL);
 }
 
