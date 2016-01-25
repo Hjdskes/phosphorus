@@ -23,12 +23,10 @@
 #endif
 
 #include <stdlib.h>
-#include <cairo.h>
-#include <cairo-xlib.h>
-#include <gdk/gdk.h>
 #include <glib-object.h>
 #include <glib/gi18n.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
 #include <libpeas/peas.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -103,24 +101,6 @@ scale_pixbuf (GdkPixbuf *pixbuf, int width, int height)
 	return scaled;
 }
 
-static void
-pixbuf_onto_pixmap (GdkPixbuf *pixbuf, Display *display, int screen, Pixmap *pixmap, int width, int height)
-{
-	cairo_t *context;
-	cairo_surface_t *target;
-	Visual *visual;
-
-	visual = DefaultVisual (display, screen);
-
-	target = cairo_xlib_surface_create (display, *pixmap, visual, width, height);
-	context = cairo_create (target);
-	gdk_cairo_set_source_pixbuf (context, pixbuf, 0, 0);
-	cairo_paint (context);
-
-	cairo_destroy (context);
-	cairo_surface_destroy (target);
-}
-
 /* Taken from hsetroot. */
 static gboolean
 set_root_atoms (Display *display, Window root, Pixmap pixmap)
@@ -179,7 +159,7 @@ xlib_wallpaper_setter_set_background (PhPlugin *plugin, const gchar *filepath)
 	int screen;
 	Window root;
 	Pixmap pixmap;
-	unsigned int width, height, depth;
+	unsigned int width, height;
 
 	priv = xlib_wallpaper_setter_get_instance_private (XLIB_WALLPAPER_SETTER (plugin));
 
@@ -187,12 +167,11 @@ xlib_wallpaper_setter_set_background (PhPlugin *plugin, const gchar *filepath)
 	root = RootWindow (priv->display, screen);
 	width = DisplayWidth (priv->display, screen);
 	height = DisplayHeight (priv->display, screen);
-	depth = DefaultDepth (priv->display, screen);
 
+	gdk_pixbuf_xlib_init (priv->display, screen);
 	pixbuf = open_pixbuf (filepath);
 	pixbuf = scale_pixbuf (pixbuf, width, height);
-	pixmap = XCreatePixmap (priv->display, root, width, height, depth);
-	pixbuf_onto_pixmap (pixbuf, priv->display, screen, &pixmap, width, height);
+	gdk_pixbuf_xlib_render_pixmap_and_mask (pixbuf, &pixmap, NULL, 0);
 
 	if (!set_root_atoms (priv->display, root, pixmap)) {
 		warn (_("Could not create atoms\n"));

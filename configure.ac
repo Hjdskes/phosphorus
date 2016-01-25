@@ -59,8 +59,7 @@ AC_ARG_ENABLE([xlib],
               [enable_xlib=$enableval],
               [enable_xlib="yes"])
 PKG_CHECK_MODULES([XLIB_PLUGIN], [x11
-				  cairo-xlib
-				  gdk-pixbuf-2.0 >= GDKPIXBUF_REQUIRED])
+				  gdk-pixbuf-xlib-2.0])
 AM_CONDITIONAL(ENABLE_XLIB, test x"$enable_xlib" = "xyes")
 
 # Package requirements
