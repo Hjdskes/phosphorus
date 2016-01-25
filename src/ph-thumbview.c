@@ -208,8 +208,11 @@ ph_thumbview_add_directory (PhThumbview *thumbview, PhRecurseType recurse, const
 		return;
 	}
 
-	/* FIXME: Check errno with g_file_error_from_errno () to distinguish actual errors
-	 * from reaching the end of the directory? */
+	/* Checking errno as suggested for g_dir_read_name does not make much sense in this case:
+	 * calling g_dir_read_name again will likely attempt to open the same file in case NULL
+	 * was returned because of an error. There is (AFAIK) no way to tell GDir to advance to
+	 * the next file, skipping the problem. Therefore, reading files would halt regardless of
+	 * whether it was the last file or a problematic file. */
 	while ((file = g_dir_read_name (directory))) {
 		filepath = g_build_filename (path, file, NULL);
 
