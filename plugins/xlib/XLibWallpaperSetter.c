@@ -148,9 +148,6 @@ set_root_atoms (Display *display, Window root, Pixmap pixmap)
 	return TRUE;
 }
 
-// FIXME: launching compton afterwards shows:
-// error 9 (BadDrawable) request 14 minor 0 serial 352 ("BadDrawable (invalid Pixmap or Window parameter)")
-// Using for example Nitrogen after, it crashes.
 static void
 xlib_wallpaper_setter_set_background (PhPlugin *plugin, const gchar *filepath)
 {
@@ -179,7 +176,7 @@ xlib_wallpaper_setter_set_background (PhPlugin *plugin, const gchar *filepath)
 	}
 
 	XKillClient (priv->display, AllTemporary);
-	XSetCloseDownMode (priv->display, RetainTemporary);
+	XSetCloseDownMode (priv->display, RetainPermanent);
 
 	XSetWindowBackgroundPixmap (priv->display, root, pixmap);
 	XClearWindow (priv->display, root);
