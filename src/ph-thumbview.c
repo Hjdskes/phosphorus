@@ -49,6 +49,9 @@ static guint signals[SIGNAL_LAST];
 struct _PhThumbviewPrivate {
 	GtkIconView *iconview;
 	GtkListStore *store;
+
+	/* GdkPixbuf's supported formats. */
+	GSList *supported_formats;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PhThumbview, ph_thumbview, GTK_TYPE_SCROLLED_WINDOW)
@@ -109,9 +112,27 @@ ph_thumbview_selection_changed (UNUSED GtkIconView *iconview, gpointer user_data
 }
 
 static void
+ph_thumbview_dispose (GObject *object)
+{
+	PhThumbviewPrivate *priv;
+
+	priv = ph_thumbview_get_instance_private (PH_THUMBVIEW (object));
+
+	if (priv->supported_formats) {
+		g_slist_free (priv->supported_formats);
+		priv->supported_formats = NULL;
+	}
+
+	G_OBJECT_CLASS (ph_thumbview_parent_class)->dispose (object);
+}
+
+static void
 ph_thumbview_class_init (PhThumbviewClass *ph_thumbview_class)
 {
+	GObjectClass *object_class = G_OBJECT_CLASS (ph_thumbview_class);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (ph_thumbview_class);
+
+	object_class->dispose = ph_thumbview_dispose;
 
 	signals[SIGNAL_ACTIVATED] =
 		g_signal_new ("activated", // FIXME: wrap in I_()?
@@ -145,6 +166,18 @@ ph_thumbview_class_init (PhThumbviewClass *ph_thumbview_class)
 static void
 ph_thumbview_init (PhThumbview *thumbview)
 {
+	PhThumbviewPrivate *priv;
+
+	priv = ph_thumbview_get_instance_private (thumbview);
+
+	/* Hold GdkPixbuf's supported formats in memory. This list will be traversed for every file
+	 * found inside a directory being scanned. It is therefore better to hold it in memory than
+	 * to query and free it for every file being scanned. Perhaps, to reduce memory usage, the
+	 * list should be freed after startup due to it being unlikely that many new directories
+	 * will be added after (the first) startup. However, doing that now is a premature
+	 * optimization. */
+	priv->supported_formats = gdk_pixbuf_get_formats ();
+
 	gtk_widget_init_template (GTK_WIDGET (thumbview));
 }
 
@@ -157,6 +190,7 @@ ph_thumbview_new ()
 void
 ph_thumbview_add_directory (PhThumbview *thumbview, PhRecurseType recurse, const gchar *path)
 {
+	PhThumbviewPrivate *priv;
 	GDir *directory = NULL;
 	gchar *filepath;
 	const gchar *file;
@@ -164,6 +198,8 @@ ph_thumbview_add_directory (PhThumbview *thumbview, PhRecurseType recurse, const
 
 	g_return_if_fail (PH_IS_THUMBVIEW (thumbview));
 	g_return_if_fail (path != NULL);
+
+	priv = ph_thumbview_get_instance_private (thumbview);
 
 	directory = g_dir_open (path, 0, &error);
 	if (!directory) {
@@ -183,7 +219,7 @@ ph_thumbview_add_directory (PhThumbview *thumbview, PhRecurseType recurse, const
 			} else {
 				continue;
 			}
-		} else if (ph_file_is_image (file)) {
+		} else if (ph_file_is_image (priv->supported_formats, filepath)) {
 			ph_thumbview_add_image (thumbview, filepath);
 		}
 

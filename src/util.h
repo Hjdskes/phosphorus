@@ -24,7 +24,7 @@
 
 G_BEGIN_DECLS
 
-gboolean ph_file_is_image (const gchar *file);
+gboolean ph_file_is_image (GSList *supported_formats, const gchar *file);
 void ph_get_plugin_dirs (gchar **plugin_dir, gchar **plugin_data_dir);
 void ph_get_user_dir (gchar **user_dir);
 

@@ -23,28 +23,21 @@
 #endif
 
 #include <glib.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 
 #include "util.h"
 
-/* FIXME: find better way to do this. */
 gboolean
-ph_file_is_image (const gchar *file)
+ph_file_is_image (GSList *supported_formats, const gchar *filepath)
 {
-	static const gchar *filetypes[] = {
-		".png",  ".PNG",
-		".jpg",  ".JPG",
-		".jpeg", ".JPEG",
-		".gif",  ".GIF",
-	};
-	static guint n = G_N_ELEMENTS (filetypes);
+	GdkPixbufFormat *format;
 
-	for (guint i = 0; i < n; i++) {
-		if (g_strrstr (file, filetypes[i])) {
-			return TRUE;
-		}
-	}
+	g_return_val_if_fail (supported_formats != NULL, FALSE);
+	g_return_val_if_fail (filepath != NULL, FALSE);
 
-	return FALSE;
+	format = gdk_pixbuf_get_file_info (filepath, NULL, NULL);
+
+	return format && g_slist_find (supported_formats, format);
 }
 
 void
