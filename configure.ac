@@ -27,8 +27,6 @@ LT_INIT(disable-static)
 # Resources
 AC_PATH_PROG(GLIB_COMPILE_RESOURCES, glib-compile-resources)
 
-# TODO: active plugins for schemas
-
 # Internationalization
 IT_PROG_INTLTOOL(0.50.1)
 AM_GLIB_GNU_GETTEXT
@@ -46,21 +44,39 @@ GOBJECT_INTROSPECTION_CHECK(0.9.3)
 AC_SUBST(PHOSPHORUS_PLUGINS_DATA_DIR, "$datadir/phosphorus/plugins")
 AC_SUBST(PHOSPHORUS_PLUGINS_LIBS_DIR, "$libdir/phosphorus/plugins")
 
+# Active plugins for the gschema
+ACTIVE_PLUGINS=
+
+AC_DEFUN([APPEND], [
+	if test "$ACTIVE_PLUGINS" = ""; then
+		ACTIVE_PLUGINS="$1"
+	else
+		ACTIVE_PLUGINS="${ACTIVE_PLUGINS}, $1"
+	fi])
+
 # Check for GNOME support
 AC_ARG_ENABLE([gnome],
               AS_HELP_STRING([--enable-gnome[=@<:@no/yes@:>@]],[Build with GNOME Shell support]),
               [enable_gnome=$enableval],
               [enable_gnome="yes"])
-AM_CONDITIONAL(ENABLE_GNOME, test x"$enable_gnome" = "xyes")
+if test "$enable_gnome" = "yes"; then
+	APPEND('GnomeWallpaperSetter')
+fi
+AM_CONDITIONAL(ENABLE_GNOME, test "$enable_gnome" = "yes")
 
 # Check for XLib support
 AC_ARG_ENABLE([xlib],
               AS_HELP_STRING([--enable-xlib[=@<:@no/yes@:>@]],[Build with XLib support]),
               [enable_xlib=$enableval],
               [enable_xlib="yes"])
-PKG_CHECK_MODULES([XLIB_PLUGIN], [x11
-				  gdk-pixbuf-xlib-2.0])
-AM_CONDITIONAL(ENABLE_XLIB, test x"$enable_xlib" = "xyes")
+if test "$enable_xlib" = "yes"; then
+	PKG_CHECK_MODULES([XLIB_PLUGIN], [x11
+					  gdk-pixbuf-xlib-2.0])
+	APPEND('XLibWallpaperSetter')
+fi
+AM_CONDITIONAL(ENABLE_XLIB, test "$enable_xlib" = "yes")
+
+AC_SUBST(ACTIVE_PLUGINS)
 
 # Package requirements
 PKG_CHECK_MODULES([PHOSPHORUS_BASE], [gtk+-3.0 >= GTK_REQUIRED,

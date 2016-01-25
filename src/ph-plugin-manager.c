@@ -32,6 +32,8 @@
 #include "ph-plugin-manager.h"
 #include "util.h"
 
+#define SCHEMA "org.unia.phosphorus"
+
 enum {
 	PROP_0,
 	PROP_APPLICATION,
@@ -41,6 +43,7 @@ struct _PhPluginManager {
 	GObject parent_instance;
 
 	PhApplication *application;
+	GSettings *plugin_settings;
 	PeasEngine *engine;
 	PeasExtensionSet *extensions;
 };
@@ -151,6 +154,7 @@ ph_plugin_manager_dispose (GObject *object)
 {
 	PhPluginManager *manager = PH_PLUGIN_MANAGER (object);
 
+	g_clear_object (&manager->plugin_settings);
 	g_clear_object (&manager->application);
 	g_clear_object (&manager->engine);
 	g_clear_object (&manager->extensions);
@@ -180,6 +184,7 @@ ph_plugin_manager_class_init (PhPluginManagerClass *klass)
 static void
 ph_plugin_manager_init (PhPluginManager *manager)
 {
+	manager->plugin_settings = g_settings_new (SCHEMA);
 	manager->engine = peas_engine_get_default ();
 
 	/* Require our own typelib, see gedit-plugin-manager.c. */
@@ -200,7 +205,12 @@ ph_plugin_manager_init (PhPluginManager *manager)
 
 	peas_extension_set_foreach (manager->extensions,
 				    (PeasExtensionSetForeachFunc) extension_added, manager);
+
 	/* FIXME: disable apply button when no plugins are found. */
+
+	g_settings_bind (manager->plugin_settings, "active-plugins",
+	                 manager->engine, "loaded-plugins",
+	                 G_SETTINGS_BIND_DEFAULT);
 }
 
 PhPluginManager *

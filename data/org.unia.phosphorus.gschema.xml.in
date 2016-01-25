@@ -17,5 +17,10 @@
       <summary>Recurse into directories when scanning for wallpapers</summary>
       <description>When scanning for wallpapers, recursion can be used to scan nested directories.</description>
     </key>
+    <key name="active-plugins" type="as">
+      <default>[@ACTIVE_PLUGINS@]</default>
+      <summary>Active plugins</summary>
+      <description>List of active plugins.</description>
+    </key>
   </schema>
 </schemalist>
