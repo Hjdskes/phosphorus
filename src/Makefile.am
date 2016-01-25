@@ -21,7 +21,6 @@ phosphorus_LDADD = \
 phosphorus_LDFLAGS = \
 	-export-dynamic -no-undefined
 
-# FIXME: do not actually install .la file?
 pkglib_LTLIBRARIES = \
 	libphosphorus.la
 

@@ -1,4 +1,3 @@
-# FIXME: Gedit/EOG have this, but do not actually install this file...
 pkglib_LTLIBRARIES += \
 	plugin/libphosphorus-plugin.la
 
