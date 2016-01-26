@@ -30,9 +30,8 @@
 
 #include "ph-application.h"
 #include "ph-plugin-manager.h"
+#include "gsettings.h"
 #include "util.h"
-
-#define SCHEMA "org.unia.phosphorus"
 
 enum {
 	PROP_0,

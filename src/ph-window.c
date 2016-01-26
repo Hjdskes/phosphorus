@@ -27,9 +27,7 @@
 
 #include "ph-thumbview.h"
 #include "ph-window.h"
-
-#define SCHEMA "org.unia.phosphorus"
-#define KEY "wallpaper"
+#include "gsettings.h"
 
 /* Copyright years. */
 #define COPYRIGHT "2015-2016"
@@ -75,7 +73,7 @@ ph_window_thumbview_activated (UNUSED PhThumbview *thumbview,
 	priv = ph_window_get_instance_private (PH_WINDOW (user_data));
 
 	ph_plugin_manager_proxy_plugins (priv->manager, filepath);
-	g_settings_set_string (priv->settings, KEY, filepath);
+	g_settings_set_string (priv->settings, KEY_WALLPAPER, filepath);
 }
 
 static void

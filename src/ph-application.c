@@ -33,11 +33,8 @@
 #include "ph-preferences-dialog.h"
 #include "ph-thumbview.h"
 #include "ph-window.h"
+#include "gsettings.h"
 #include "util.h"
-
-#define SCHEMA "org.unia.phosphorus"
-#define KEY_DIRECTORIES "directories"
-#define KEY_RECURSE "recursion"
 
 enum {
 	PROP_0,

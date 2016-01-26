@@ -26,6 +26,7 @@
 #include <libpeas-gtk/peas-gtk.h>
 
 #include "ph-preferences-dialog.h"
+#include "gsettings.h"
 
 /* Modeled after Gedit's preferences dialog:
  *
@@ -35,8 +36,6 @@
  * and there is already a dialog open, it is reparented
  * and shown.
  */
-
-#define SCHEMA "org.unia.phosphorus"
 
 enum {
 	CLOSE,
