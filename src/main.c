@@ -30,11 +30,13 @@
 
 #include "ph-application.h"
 
+static gboolean restore_wallpaper;
+
 static gboolean
-_print_version_and_exit (UNUSED const gchar *name,
-			 UNUSED const gchar *value,
-			 UNUSED gpointer     user_data,
-			 UNUSED GError     **error)
+print_version_and_exit (UNUSED const gchar *name,
+			UNUSED const gchar *value,
+			UNUSED gpointer     user_data,
+			UNUSED GError     **error)
 {
 	g_print ("%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
 	exit (EXIT_SUCCESS);
@@ -42,13 +44,15 @@ _print_version_and_exit (UNUSED const gchar *name,
 }
 
 static const GOptionEntry options[] = {
-	{ "version", 'v', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK, _print_version_and_exit,
+	{ "restore", 'r', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &restore_wallpaper,
+		N_("Restore the wallpaper"), NULL },
+	{ "version", 'v', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK, print_version_and_exit,
 		N_("Show the application's version"), NULL },
 	{ NULL }
 };
 
 static gboolean
-_parse_options (int argc, char **argv)
+parse_options (int argc, char **argv)
 {
 	GOptionContext *context;
 	GError *error = NULL;
@@ -66,8 +70,7 @@ _parse_options (int argc, char **argv)
 		gchar *help;
 
 		help = g_strdup_printf (_("Run '%s --help' to see a full "
-					"list of available command line "
-					"options"), argv[0]);
+					"list of available command line options"), argv[0]);
 		g_printerr ("%s\n%s\n", error->message, help);
 
 		g_clear_error (&error);
@@ -89,11 +92,11 @@ main (int argc, char **argv)
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
 
-	if (!_parse_options (argc, argv)) {
+	if (!parse_options (argc, argv)) {
 		return EXIT_FAILURE;
 	}
 
-	application = ph_application_new ();
+	application = ph_application_new (restore_wallpaper);
 	status = g_application_run (G_APPLICATION (application), argc, argv);
 	g_object_unref (application);
 

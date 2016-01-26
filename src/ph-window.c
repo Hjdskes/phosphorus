@@ -28,6 +28,9 @@
 #include "ph-thumbview.h"
 #include "ph-window.h"
 
+#define SCHEMA "org.unia.phosphorus"
+#define KEY "wallpaper"
+
 /* Copyright years. */
 #define COPYRIGHT "2015-2016"
 
@@ -38,6 +41,7 @@ enum {
 
 struct _PhWindowPrivate {
 	PhPluginManager *manager;
+	GSettings *settings;
 
 	GtkWidget *headerbar;
 	PhThumbview *thumbview;
@@ -71,6 +75,7 @@ ph_window_thumbview_activated (UNUSED PhThumbview *thumbview,
 	priv = ph_window_get_instance_private (PH_WINDOW (user_data));
 
 	ph_plugin_manager_proxy_plugins (priv->manager, filepath);
+	g_settings_set_string (priv->settings, KEY, filepath);
 }
 
 static void
@@ -135,6 +140,7 @@ ph_window_dispose (GObject *object)
 	priv = ph_window_get_instance_private (PH_WINDOW (object));
 
 	g_clear_object (&priv->manager);
+	g_clear_object (&priv->settings);
 
 	G_OBJECT_CLASS (ph_window_parent_class)->dispose (object);
 }
@@ -185,6 +191,8 @@ ph_window_init (PhWindow *window)
 
 	action = g_action_map_lookup_action (G_ACTION_MAP (window), "apply");
 	g_simple_action_set_enabled (G_SIMPLE_ACTION (action), FALSE);
+
+	priv->settings = g_settings_new (SCHEMA);
 }
 
 PhWindow *

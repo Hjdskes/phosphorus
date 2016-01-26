@@ -39,7 +39,14 @@
 #define KEY_DIRECTORIES "directories"
 #define KEY_RECURSE "recursion"
 
+enum {
+	PROP_0,
+	PROP_RESTORE,
+};
+
 struct _PhApplicationPrivate {
+	gboolean restore_wallpaper;
+
 	GSettings *settings;
 	PhPluginManager *manager;
 };
@@ -144,14 +151,64 @@ ph_application_activate (GApplication *application)
 
 	priv = ph_application_get_instance_private (PH_APPLICATION (application));
 
-	directories = g_settings_get_strv (priv->settings, KEY_DIRECTORIES);
-	recurse = g_settings_get_enum (priv->settings, KEY_RECURSE);
-	window = ph_window_new (PH_APPLICATION (application), priv->manager);
-	ph_window_scan_directories (window, recurse, directories);
-	g_strfreev (directories);
+	if (!priv->restore_wallpaper) {
+		directories = g_settings_get_strv (priv->settings, KEY_DIRECTORIES);
+		recurse = g_settings_get_enum (priv->settings, KEY_RECURSE);
+		window = ph_window_new (PH_APPLICATION (application), priv->manager);
+		ph_window_scan_directories (window, recurse, directories);
+		g_strfreev (directories);
 
-	gtk_window_present_with_time (GTK_WINDOW (window), GDK_CURRENT_TIME);
+		gtk_window_present_with_time (GTK_WINDOW (window), GDK_CURRENT_TIME);
+	} else {
+		const gchar *filepath = g_settings_get_string (priv->settings, "wallpaper");
+		if (strlen (filepath) == 0) {
+			g_printerr (_("No previous wallpaper set\n"));
+		} else {
+			ph_plugin_manager_proxy_plugins (priv->manager, filepath);
+		}
+	}
 }
+
+static void
+ph_application_set_property (GObject      *object,
+			     guint         prop_id,
+			     const GValue *value,
+			     GParamSpec   *pspec)
+{
+	PhApplicationPrivate *priv;
+
+	priv = ph_application_get_instance_private (PH_APPLICATION (object));
+
+	switch (prop_id) {
+		case PROP_RESTORE:
+			priv->restore_wallpaper = g_value_get_boolean (value);
+			break;
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
+ph_application_get_property (GObject    *object,
+			     guint       prop_id,
+			     GValue     *value,
+			     GParamSpec *pspec)
+{
+	PhApplicationPrivate *priv;
+
+	priv = ph_application_get_instance_private (PH_APPLICATION (object));
+
+	switch (prop_id) {
+		case PROP_RESTORE:
+			g_value_set_boolean (value, priv->restore_wallpaper);
+			break;
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+			break;
+	}
+}
+
 
 static void
 ph_application_dispose (GObject *object)
@@ -172,10 +229,22 @@ ph_application_class_init (PhApplicationClass *ph_application_class)
 	GObjectClass *object_class = G_OBJECT_CLASS (ph_application_class);
 	GApplicationClass *application_class = G_APPLICATION_CLASS (ph_application_class);
 
+	object_class->set_property = ph_application_set_property;
+	object_class->get_property = ph_application_get_property;
 	object_class->dispose = ph_application_dispose;
 
 	application_class->startup = ph_application_startup;
 	application_class->activate = ph_application_activate;
+
+	g_object_class_install_property (object_class, PROP_RESTORE,
+					 g_param_spec_boolean ("restore-wallpaper",
+							       "RestoreWallpaper",
+							       "Whether to restore the set wallpaper",
+							       FALSE,
+							       G_PARAM_READWRITE |
+							       G_PARAM_PRIVATE |
+							       G_PARAM_CONSTRUCT_ONLY |
+							       G_PARAM_STATIC_STRINGS));
 }
 
 static void
@@ -184,13 +253,14 @@ ph_application_init (UNUSED PhApplication *application)
 }
 
 PhApplication *
-ph_application_new (void)
+ph_application_new (gboolean restore_wallpaper)
 {
 	GObject *application;
 
 	application = g_object_new (PH_TYPE_APPLICATION,
 				    "application-id", "org.unia.phosphorus",
 				    "flags", G_APPLICATION_FLAGS_NONE,
+				    "restore-wallpaper", restore_wallpaper,
 				    NULL);
 
 	return PH_APPLICATION (application);

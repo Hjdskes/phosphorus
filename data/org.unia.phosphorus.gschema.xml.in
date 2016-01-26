@@ -22,5 +22,10 @@
       <summary>Active plugins</summary>
       <description>List of active plugins.</description>
     </key>
+    <key name="wallpaper" type="s">
+      <default>""</default>
+      <summary>The previously applied wallpaper</summary>
+      <description>The wallpaper previously applied by Phosphorus.</description>
+    </key>
   </schema>
 </schemalist>

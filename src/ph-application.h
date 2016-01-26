@@ -46,7 +46,7 @@ struct _PhApplicationClass {
 
 GType          ph_application_get_type (void);
 
-PhApplication *ph_application_new (void);
+PhApplication *ph_application_new (gboolean restore_wallpaper);
 
 G_END_DECLS
 
