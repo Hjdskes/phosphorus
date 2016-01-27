@@ -49,15 +49,18 @@ struct _PhPreferencesDialog {
 
 	GSettings *settings;
 
+	GtkWidget *recurse_switch;
 	GtkWidget *plugin_manager;
 };
 
 G_DEFINE_TYPE (PhPreferencesDialog, ph_preferences_dialog, GTK_TYPE_WINDOW)
 
 static void
-setup_phosphorus_page (UNUSED PhPreferencesDialog *dialog)
+setup_phosphorus_page (PhPreferencesDialog *dialog)
 {
-	// TODO: give contents.
+	g_settings_bind (dialog->settings, KEY_RECURSE,
+			 dialog->recurse_switch, "active",
+			 G_SETTINGS_BIND_DEFAULT);
 }
 
 static void
@@ -104,6 +107,7 @@ ph_preferences_dialog_class_init (PhPreferencesDialogClass *klass)
 
 	gtk_widget_class_set_template_from_resource (widget_class,
 						     "/org/unia/phosphorus/preferences.ui");
+	gtk_widget_class_bind_template_child (widget_class, PhPreferencesDialog, recurse_switch);
 	gtk_widget_class_bind_template_child (widget_class, PhPreferencesDialog, plugin_manager);
 }
 
