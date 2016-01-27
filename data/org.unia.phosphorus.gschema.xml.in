@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="@GETTEXT_PACKAGE@">
-  <!-- Synced with PhRecurseType in src/ph-thumbview.h -->
-  <enum id="org.unia.phosphorus.recursion">
-    <value nick="no-recurse" value="0"/>
-    <value nick="recurse" value="1"/>
-  </enum>
-
   <schema path="/org/unia/phosphorus/" id="org.unia.phosphorus">
     <key name="directories" type="as">
       <default>['']</default>
       <summary>Directories to scan for wallpapers</summary>
       <description>An array of directories which Phosphorus will scan for wallpapers.</description>
     </key>
-    <key name="recursion" enum="org.unia.phosphorus.recursion">
-      <default>"recurse"</default>
+    <key name="recursion" type="b">
+      <default>true</default>
       <summary>Recurse into directories when scanning for wallpapers</summary>
       <description>When scanning for wallpapers, recursion can be used to scan nested directories.</description>
     </key>

@@ -188,7 +188,7 @@ ph_thumbview_new ()
 }
 
 void
-ph_thumbview_add_directory (PhThumbview *thumbview, PhRecurseType recurse, const gchar *path)
+ph_thumbview_add_directory (PhThumbview *thumbview, gboolean recurse, const gchar *path)
 {
 	PhThumbviewPrivate *priv;
 	GDir *directory = NULL;
@@ -217,7 +217,7 @@ ph_thumbview_add_directory (PhThumbview *thumbview, PhRecurseType recurse, const
 		filepath = g_build_filename (path, file, NULL);
 
 		if (g_file_test (filepath, G_FILE_TEST_IS_DIR)) {
-			if (recurse == RECURSE) {
+			if (recurse) {
 				ph_thumbview_add_directory (thumbview, recurse, filepath);
 			} else {
 				continue;

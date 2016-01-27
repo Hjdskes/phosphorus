@@ -239,7 +239,7 @@ ph_window_close (PhWindow *window)
 }
 
 void
-ph_window_scan_directories (PhWindow *window, PhRecurseType recurse, gchar * const *directories)
+ph_window_scan_directories (PhWindow *window, gboolean recurse, gchar * const *directories)
 {
 	PhWindowPrivate *priv;
 

@@ -43,17 +43,12 @@ struct _PhThumbviewClass {
 	GtkScrolledWindowClass parent_class;
 };
 
-typedef enum {
-	NO_RECURSE,
-	RECURSE
-} PhRecurseType;
-
 GType        ph_thumbview_get_type (void);
 
 PhThumbview *ph_thumbview_new (void);
 
 void         ph_thumbview_add_directory (PhThumbview *thumbview,
-					 PhRecurseType recurse,
+					 gboolean     recurse,
 					 const gchar *path);
 
 void         ph_thumbview_activate (PhThumbview *thumbview);

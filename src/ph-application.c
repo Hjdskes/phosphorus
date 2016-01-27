@@ -143,14 +143,14 @@ ph_application_activate (GApplication *application)
 {
 	PhApplicationPrivate *priv;
 	PhWindow *window;
-	PhRecurseType recurse;
 	gchar **directories;
+	gboolean recurse;
 
 	priv = ph_application_get_instance_private (PH_APPLICATION (application));
 
 	if (!priv->restore_wallpaper) {
 		directories = g_settings_get_strv (priv->settings, KEY_DIRECTORIES);
-		recurse = g_settings_get_enum (priv->settings, KEY_RECURSE);
+		recurse = g_settings_get_boolean (priv->settings, KEY_RECURSE);
 		window = ph_window_new (PH_APPLICATION (application), priv->manager);
 		ph_window_scan_directories (window, recurse, directories);
 		g_strfreev (directories);
