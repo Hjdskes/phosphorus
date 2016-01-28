@@ -48,16 +48,34 @@ struct _PhPreferencesDialog {
 
 	GSettings *settings;
 
+	GtkWidget *dir_list;
 	GtkWidget *recurse_switch;
 	GtkWidget *plugin_manager;
 };
 
 G_DEFINE_TYPE (PhPreferencesDialog, ph_preferences_dialog, GTK_TYPE_WINDOW)
 
+// FIXME: make pretty box with remove button 'n all
+static GtkWidget *
+widget_create_func (gpointer item, UNUSED gpointer user_data)
+{
+	PhDir *dir = PH_DIR (item);
+	GtkWidget *label;
+	gchar *directory;
+
+	directory = ph_dir_get_path (dir);
+	label = gtk_label_new (directory);
+	g_free (directory);
+
+	return label;
+}
+
 // TODO: set placeholder in list box when no directories are added.
 static void
 setup_phosphorus_page (PhPreferencesDialog *dialog)
 {
+	gtk_widget_show_all (dialog->dir_list);
+
 	g_settings_bind (dialog->settings, KEY_RECURSE,
 			 dialog->recurse_switch, "active",
 			 G_SETTINGS_BIND_DEFAULT);
@@ -80,6 +98,10 @@ ph_preferences_dialog_set_property (GObject      *object,
 	switch (prop_id) {
 		case PROP_STORE:
 			dialog->dir_store = G_LIST_STORE (g_value_dup_object (value));
+			gtk_list_box_bind_model (GTK_LIST_BOX (dialog->dir_list),
+						 G_LIST_MODEL (dialog->dir_store),
+						 (GtkListBoxCreateWidgetFunc) widget_create_func,
+						 NULL, NULL);
 			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -155,6 +177,7 @@ ph_preferences_dialog_class_init (PhPreferencesDialogClass *klass)
 
 	gtk_widget_class_set_template_from_resource (widget_class,
 						     "/org/unia/phosphorus/preferences.ui");
+	gtk_widget_class_bind_template_child (widget_class, PhPreferencesDialog, dir_list);
 	gtk_widget_class_bind_template_child (widget_class, PhPreferencesDialog, recurse_switch);
 	gtk_widget_class_bind_template_child (widget_class, PhPreferencesDialog, plugin_manager);
 }
