@@ -56,9 +56,9 @@ ph_application_action_preferences (UNUSED GSimpleAction *action,
 				   gpointer              user_data)
 {
 	GtkApplication *application = GTK_APPLICATION (user_data);
-	PhWindow *window;
+	GtkWindow *window;
 
-	window = PH_WINDOW (gtk_application_get_active_window (application));
+	window = gtk_application_get_active_window (application);
 	ph_preferences_dialog_show (window);
 }
 
