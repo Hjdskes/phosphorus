@@ -20,8 +20,6 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
-
 G_BEGIN_DECLS
 
 #define PH_PREFERENCES_DIALOG_TYPE ph_preferences_dialog_get_type ()
@@ -30,7 +28,7 @@ G_DECLARE_FINAL_TYPE (PhPreferencesDialog,
 		      ph_preferences_dialog,
 		      PH, PREFERENCES_DIALOG, GtkWindow)
 
-void ph_preferences_dialog_show (GtkWindow *window);
+PhPreferencesDialog *ph_preferences_dialog_new (void);
 
 G_END_DECLS
 

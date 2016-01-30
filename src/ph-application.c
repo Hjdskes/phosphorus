@@ -55,10 +55,16 @@ ph_application_action_preferences (UNUSED GSimpleAction *action,
 				   gpointer              user_data)
 {
 	GtkApplication *application = GTK_APPLICATION (user_data);
+	PhPreferencesDialog *dialog;
 	GtkWindow *window;
 
 	window = gtk_application_get_active_window (application);
-	ph_preferences_dialog_show (window);
+	dialog = ph_preferences_dialog_new ();
+
+	g_signal_connect (dialog, "destroy", G_CALLBACK (gtk_widget_destroyed), &dialog);
+	gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
+
+	gtk_window_present (GTK_WINDOW (dialog));
 }
 
 static void
