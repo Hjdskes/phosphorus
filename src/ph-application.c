@@ -31,7 +31,6 @@
 #include "ph-application.h"
 #include "ph-plugin-manager.h"
 #include "ph-preferences-dialog.h"
-#include "ph-thumbview.h"
 #include "ph-window.h"
 #include "gsettings.h"
 #include "util.h"
