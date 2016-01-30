@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "ph-window.h"
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
@@ -30,7 +30,7 @@ G_DECLARE_FINAL_TYPE (PhPreferencesDialog,
 		      ph_preferences_dialog,
 		      PH, PREFERENCES_DIALOG, GtkWindow)
 
-void ph_preferences_dialog_show (PhWindow *window);
+void ph_preferences_dialog_show (GtkWindow *window);
 
 G_END_DECLS
 

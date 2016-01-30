@@ -122,12 +122,12 @@ ph_preferences_dialog_init (PhPreferencesDialog *dialog)
 }
 
 void
-ph_preferences_dialog_show (PhWindow *window)
+ph_preferences_dialog_show (GtkWindow *window)
 {
-	static GtkWidget *preferences_dialog = NULL;
+	static GtkWindow *preferences_dialog = NULL;
 
 	if (preferences_dialog == NULL) {
-		preferences_dialog = GTK_WIDGET (g_object_new (PH_PREFERENCES_DIALOG_TYPE,
+		preferences_dialog = GTK_WINDOW (g_object_new (PH_PREFERENCES_DIALOG_TYPE,
 							       "application",
 							       g_application_get_default (),
 							       NULL));
@@ -135,10 +135,10 @@ ph_preferences_dialog_show (PhWindow *window)
 				  &preferences_dialog);
 	}
 
-	if (GTK_WINDOW (window) != gtk_window_get_transient_for (GTK_WINDOW (preferences_dialog))) {
-		gtk_window_set_transient_for (GTK_WINDOW (preferences_dialog), GTK_WINDOW (window));
+	if (window != gtk_window_get_transient_for (preferences_dialog)) {
+		gtk_window_set_transient_for (preferences_dialog, window);
 	}
 
-	gtk_window_present (GTK_WINDOW (preferences_dialog));
+	gtk_window_present (preferences_dialog);
 }
 
