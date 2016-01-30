@@ -28,15 +28,6 @@
 #include "ph-preferences-dialog.h"
 #include "gsettings.h"
 
-/* Modeled after Gedit's preferences dialog:
- *
- * ph-preferences-dialog is a singleton since we don't
- * want two dialogs showing an inconsistent state of the
- * preferences. When ph_preferences_dialog_show is called
- * and there is already a dialog open, it is reparented
- * and shown.
- */
-
 enum {
 	CLOSE,
 	LAST_SIGNAL,
@@ -45,7 +36,7 @@ enum {
 static guint signals[LAST_SIGNAL];
 
 struct _PhPreferencesDialog {
-	GtkWindow parent;
+	GtkWindow parent_instance;
 
 	GSettings *settings;
 
@@ -121,24 +112,14 @@ ph_preferences_dialog_init (PhPreferencesDialog *dialog)
 	setup_plugin_page (dialog);
 }
 
-void
-ph_preferences_dialog_show (GtkWindow *window)
+PhPreferencesDialog *
+ph_preferences_dialog_new ()
 {
-	static GtkWindow *preferences_dialog = NULL;
+	GObject *dialog;
 
-	if (preferences_dialog == NULL) {
-		preferences_dialog = GTK_WINDOW(g_object_new (PH_PREFERENCES_DIALOG_TYPE,
-							       "application",
-							       g_application_get_default (),
-							       NULL));
-		g_signal_connect (preferences_dialog, "destroy", G_CALLBACK (gtk_widget_destroyed),
-				  &preferences_dialog);
-	}
-
-	if (window != gtk_window_get_transient_for (preferences_dialog)) {
-		gtk_window_set_transient_for (preferences_dialog, window);
-	}
-
-	gtk_window_present (preferences_dialog);
+	dialog = g_object_new (PH_PREFERENCES_DIALOG_TYPE,
+			       "application", g_application_get_default (),
+			       NULL);
+	return PH_PREFERENCES_DIALOG (dialog);
 }
 
