@@ -25,6 +25,7 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 
+#include "ph-plugin-manager.h"
 #include "ph-thumbview.h"
 #include "ph-window.h"
 #include "gsettings.h"
