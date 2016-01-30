@@ -21,6 +21,7 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <gio/gio.h>
 
 #include "ph-application.h"
 #include "ph-plugin-manager.h"
@@ -48,15 +49,15 @@ struct _PhWindowClass {
 
 GType     ph_window_get_type (void);
 
-PhWindow *ph_window_new (PhApplication *application, PhPluginManager *manager);
+PhWindow *ph_window_new (PhApplication   *application,
+			 PhPluginManager *manager,
+			 GListStore      *dir_store);
 
 void      ph_window_show_about_dialog (PhWindow *window);
 
 void      ph_window_close (PhWindow *window);
 
-void      ph_window_scan_directories (PhWindow      *window,
-				      gboolean       recurse,
-				      gchar * const *directories);
+void      ph_window_scan_directories (PhWindow *window);
 
 G_END_DECLS
 

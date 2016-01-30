@@ -25,8 +25,14 @@
 #include <glib/gi18n.h>
 #include <libpeas-gtk/peas-gtk.h>
 
+#include "ph-dir.h"
 #include "ph-preferences-dialog.h"
 #include "gsettings.h"
+
+enum {
+	PROP_0,
+	PROP_STORE,
+};
 
 enum {
 	CLOSE,
@@ -38,6 +44,8 @@ static guint signals[LAST_SIGNAL];
 struct _PhPreferencesDialog {
 	GtkWindow parent_instance;
 
+	GListStore *dir_store;
+
 	GSettings *settings;
 
 	GtkWidget *recurse_switch;
@@ -46,6 +54,7 @@ struct _PhPreferencesDialog {
 
 G_DEFINE_TYPE (PhPreferencesDialog, ph_preferences_dialog, GTK_TYPE_WINDOW)
 
+// TODO: set placeholder in list box when no directories are added.
 static void
 setup_phosphorus_page (PhPreferencesDialog *dialog)
 {
@@ -61,11 +70,48 @@ setup_plugin_page (PhPreferencesDialog *dialog)
 }
 
 static void
+ph_preferences_dialog_set_property (GObject      *object,
+				    guint         prop_id,
+				    const GValue *value,
+				    GParamSpec   *pspec)
+{
+	PhPreferencesDialog *dialog = PH_PREFERENCES_DIALOG (object);
+
+	switch (prop_id) {
+		case PROP_STORE:
+			dialog->dir_store = G_LIST_STORE (g_value_dup_object (value));
+			break;
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
+ph_preferences_dialog_get_property (GObject    *object,
+				    guint       prop_id,
+				    GValue     *value,
+				    GParamSpec *pspec)
+{
+	PhPreferencesDialog *dialog = PH_PREFERENCES_DIALOG (object);
+
+	switch (prop_id) {
+		case PROP_STORE:
+			g_value_set_object (value, dialog->dir_store);
+			break;
+		default:
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+			break;
+	}
+}
+
+static void
 ph_preferences_dialog_dispose (GObject *object)
 {
 	PhPreferencesDialog *dialog = PH_PREFERENCES_DIALOG (object);
 
 	g_clear_object (&dialog->settings);
+	g_clear_object (&dialog->dir_store);
 
 	G_OBJECT_CLASS (ph_preferences_dialog_parent_class)->dispose (object);
 }
@@ -83,7 +129,18 @@ ph_preferences_dialog_class_init (PhPreferencesDialogClass *klass)
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 	GtkBindingSet *binding_set;
 
+	object_class->set_property = ph_preferences_dialog_set_property;
+	object_class->get_property = ph_preferences_dialog_get_property;
 	object_class->dispose = ph_preferences_dialog_dispose;
+
+	g_object_class_install_property (object_class, PROP_STORE,
+					 g_param_spec_object ("directory-store",
+							      "DirectoryStore",
+							      "The directory store",
+							      G_TYPE_LIST_STORE,
+							      G_PARAM_READWRITE |
+							      G_PARAM_CONSTRUCT_ONLY |
+							      G_PARAM_STATIC_STRINGS));
 
 	signals[CLOSE] = g_signal_new_class_handler ("close",
 						     G_TYPE_FROM_CLASS (klass),
@@ -108,15 +165,18 @@ ph_preferences_dialog_init (PhPreferencesDialog *dialog)
 	dialog->settings = g_settings_new (SCHEMA);
 
 	gtk_widget_init_template (GTK_WIDGET (dialog));
+
 	setup_phosphorus_page (dialog);
 	setup_plugin_page (dialog);
 }
 
 PhPreferencesDialog *
-ph_preferences_dialog_new ()
+ph_preferences_dialog_new (GListStore *dir_store)
 {
+	g_return_val_if_fail (G_LIST_STORE (dir_store), NULL);
+
 	return g_object_new (PH_PREFERENCES_DIALOG_TYPE,
-			     "application", g_application_get_default (),
+			     "directory-store", dir_store,
 			     NULL);
 }
 

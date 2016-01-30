@@ -25,6 +25,7 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 
+#include "ph-dir.h"
 #include "ph-plugin-manager.h"
 #include "ph-thumbview.h"
 #include "ph-window.h"
@@ -36,10 +37,13 @@
 enum {
 	PROP_0,
 	PROP_MANAGER,
+	PROP_STORE,
 };
 
 struct _PhWindowPrivate {
 	PhPluginManager *manager;
+	GListStore *dir_store;
+
 	GSettings *settings;
 
 	GtkWidget *headerbar;
@@ -105,6 +109,9 @@ ph_window_set_property (GObject      *object,
 		case PROP_MANAGER:
 			priv->manager = PH_PLUGIN_MANAGER (g_value_dup_object (value));
 			break;
+		case PROP_STORE:
+			priv->dir_store = G_LIST_STORE (g_value_dup_object (value));
+			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 			break;
@@ -125,6 +132,9 @@ ph_window_get_property (GObject    *object,
 		case PROP_MANAGER:
 			g_value_set_object (value, priv->manager);
 			break;
+		case PROP_STORE:
+			g_value_set_object (value, priv->dir_store);
+			break;
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 			break;
@@ -139,6 +149,7 @@ ph_window_dispose (GObject *object)
 	priv = ph_window_get_instance_private (PH_WINDOW (object));
 
 	g_clear_object (&priv->manager);
+	g_clear_object (&priv->dir_store);
 	g_clear_object (&priv->settings);
 
 	G_OBJECT_CLASS (ph_window_parent_class)->dispose (object);
@@ -159,6 +170,15 @@ ph_window_class_init (PhWindowClass *ph_window_class)
 							      "PluginManager",
 							      "The Phosphorus plugin manager",
 							      PH_PLUGIN_MANAGER_TYPE,
+							      G_PARAM_READWRITE |
+							      G_PARAM_CONSTRUCT_ONLY |
+							      G_PARAM_STATIC_STRINGS));
+
+	g_object_class_install_property (object_class, PROP_STORE,
+					 g_param_spec_object ("directory-store",
+							      "DirectoryStore",
+							      "The directory store",
+							      G_TYPE_LIST_STORE,
 							      G_PARAM_READWRITE |
 							      G_PARAM_CONSTRUCT_ONLY |
 							      G_PARAM_STATIC_STRINGS));
@@ -195,14 +215,16 @@ ph_window_init (PhWindow *window)
 }
 
 PhWindow *
-ph_window_new (PhApplication *application, PhPluginManager *manager)
+ph_window_new (PhApplication *application, PhPluginManager *manager, GListStore *dir_store)
 {
 	g_return_val_if_fail (PH_IS_APPLICATION (application), NULL);
 	g_return_val_if_fail (PH_IS_PLUGIN_MANAGER (manager), NULL);
+	g_return_val_if_fail (G_IS_LIST_STORE (dir_store), NULL);
 
 	return g_object_new (PH_TYPE_WINDOW,
 			     "application", application,
 			     "plugin-manager", manager,
+			     "directory-store", dir_store,
 			     NULL);
 }
 
@@ -240,17 +262,23 @@ ph_window_close (PhWindow *window)
 }
 
 void
-ph_window_scan_directories (PhWindow *window, gboolean recurse, gchar * const *directories)
+ph_window_scan_directories (PhWindow *window)
 {
 	PhWindowPrivate *priv;
+	guint n_directories;
+	gboolean recurse;
 
 	g_return_if_fail (PH_IS_WINDOW (window));
-	g_return_if_fail (directories != NULL);
 
 	priv = ph_window_get_instance_private (window);
 
-	for (; *directories; directories++) {
-		ph_thumbview_add_directory (priv->thumbview, recurse, *directories);
+	n_directories = g_list_model_get_n_items (G_LIST_MODEL (priv->dir_store));
+	recurse = g_settings_get_boolean (priv->settings, KEY_RECURSE);
+	for (guint i = 0; i < n_directories; i++) {
+		PhDir *dir = g_list_model_get_item (G_LIST_MODEL (priv->dir_store), i);
+		gchar *directory = ph_dir_get_path (dir);
+		ph_thumbview_add_directory (priv->thumbview, recurse, directory);
+		g_free (directory);
 	}
 }
 

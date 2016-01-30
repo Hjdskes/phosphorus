@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include <gio/gio.h>
+
 G_BEGIN_DECLS
 
 #define PH_PREFERENCES_DIALOG_TYPE ph_preferences_dialog_get_type ()
@@ -28,7 +30,7 @@ G_DECLARE_FINAL_TYPE (PhPreferencesDialog,
 		      ph_preferences_dialog,
 		      PH, PREFERENCES_DIALOG, GtkWindow)
 
-PhPreferencesDialog *ph_preferences_dialog_new (void);
+PhPreferencesDialog *ph_preferences_dialog_new (GListStore *dir_store);
 
 G_END_DECLS
 

@@ -29,6 +29,7 @@
 #include <ph-plugin.h>
 
 #include "ph-application.h"
+#include "ph-dir.h"
 #include "ph-plugin-manager.h"
 #include "ph-preferences-dialog.h"
 #include "ph-window.h"
@@ -45,6 +46,7 @@ struct _PhApplicationPrivate {
 
 	GSettings *settings;
 	PhPluginManager *manager;
+	GListStore *dir_store;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PhApplication, ph_application, GTK_TYPE_APPLICATION)
@@ -54,12 +56,15 @@ ph_application_action_preferences (UNUSED GSimpleAction *action,
 				   UNUSED GVariant      *parameter,
 				   gpointer              user_data)
 {
+	PhApplicationPrivate *priv;
 	GtkApplication *application = GTK_APPLICATION (user_data);
 	PhPreferencesDialog *dialog;
 	GtkWindow *window;
 
+	priv = ph_application_get_instance_private (PH_APPLICATION (user_data));
+
 	window = gtk_application_get_active_window (application);
-	dialog = ph_preferences_dialog_new ();
+	dialog = ph_preferences_dialog_new (priv->dir_store);
 
 	g_signal_connect (dialog, "destroy", G_CALLBACK (gtk_widget_destroyed), &dialog);
 	gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
@@ -144,22 +149,38 @@ ph_application_startup (GApplication *application)
 }
 
 static void
+setup_dir_store (PhApplicationPrivate *priv)
+{
+	guint n_directories;
+	gchar **directories;
+
+	priv->dir_store = g_list_store_new (PH_TYPE_DIR);
+
+	directories = g_settings_get_strv (priv->settings, KEY_DIRECTORIES);
+	n_directories = g_strv_length (directories);
+	for (guint i = 0; i < n_directories; i++) {
+		PhDir *dir = ph_dir_new (directories[i]);
+		g_list_store_insert (priv->dir_store, 0, dir);
+		g_object_unref (dir);
+	}
+	g_strfreev (directories);
+}
+
+static void
 ph_application_activate (GApplication *application)
 {
 	PhApplicationPrivate *priv;
 	PhWindow *window;
-	gchar **directories;
-	gboolean recurse;
 
 	priv = ph_application_get_instance_private (PH_APPLICATION (application));
 
 	if (!priv->restore_wallpaper) {
-		directories = g_settings_get_strv (priv->settings, KEY_DIRECTORIES);
-		recurse = g_settings_get_boolean (priv->settings, KEY_RECURSE);
-		window = ph_window_new (PH_APPLICATION (application), priv->manager);
-		ph_window_scan_directories (window, recurse, directories);
-		g_strfreev (directories);
-
+		setup_dir_store (priv);
+		window = ph_window_new (PH_APPLICATION (application),
+					priv->manager,
+					priv->dir_store);
+		// FIXME: should be callback inside PhWindow
+		ph_window_scan_directories (window);
 		gtk_window_present_with_time (GTK_WINDOW (window), GDK_CURRENT_TIME);
 	} else {
 		const gchar *filepath = g_settings_get_string (priv->settings, "wallpaper");
@@ -211,7 +232,6 @@ ph_application_get_property (GObject    *object,
 	}
 }
 
-
 static void
 ph_application_dispose (GObject *object)
 {
@@ -221,6 +241,7 @@ ph_application_dispose (GObject *object)
 
 	g_clear_object (&priv->settings);
 	g_clear_object (&priv->manager);
+	g_clear_object (&priv->dir_store);
 
 	G_OBJECT_CLASS (ph_application_parent_class)->dispose (object);
 }
