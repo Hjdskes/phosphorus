@@ -35,6 +35,7 @@
 enum {
 	COLUMN_THUMB,
 	COLUMN_PATH,
+	COLUMN_ROOT,
 	COLUMN_NAME,
 };
 
@@ -57,7 +58,7 @@ struct _PhThumbviewPrivate {
 G_DEFINE_TYPE_WITH_PRIVATE (PhThumbview, ph_thumbview, GTK_TYPE_SCROLLED_WINDOW)
 
 static void
-ph_thumbview_add_image (PhThumbview *thumbview, const gchar *file)
+ph_thumbview_add_image (PhThumbview *thumbview, const gchar *file, const gchar *root)
 {
 	PhThumbviewPrivate *priv;
 	GdkPixbuf *thumb = NULL;
@@ -79,10 +80,44 @@ ph_thumbview_add_image (PhThumbview *thumbview, const gchar *file)
 	gtk_list_store_set (priv->store, &iter,
 			    COLUMN_THUMB, thumb,
 			    COLUMN_PATH, file,
+			    COLUMN_ROOT, root,
 			    COLUMN_NAME, basename,
 			    -1);
 	g_free (basename);
 	g_object_unref (thumb);
+}
+
+static void
+ph_thumbview_add_directory_recursive (PhThumbview *thumbview, const gchar *path, const gchar *root)
+{
+	PhThumbviewPrivate *priv;
+	GDir *directory = NULL;
+	gchar *filepath;
+	const gchar *file;
+	GError *error = NULL;
+
+	priv = ph_thumbview_get_instance_private (thumbview);
+
+	directory = g_dir_open (path, 0, &error);
+	if (!directory) {
+		g_printerr ("%s\n", error->message);
+		g_clear_error (&error);
+		return;
+	}
+
+	while ((file = g_dir_read_name (directory))) {
+		filepath = g_build_filename (path, file, NULL);
+
+		if (g_file_test (filepath, G_FILE_TEST_IS_DIR)) {
+			ph_thumbview_add_directory_recursive (thumbview, filepath, root);
+		} else if (ph_file_is_image (priv->supported_formats, filepath)) {
+			ph_thumbview_add_image (thumbview, filepath, root);
+		}
+
+		g_free (filepath);
+	}
+
+	g_dir_close (directory);
 }
 
 static void
@@ -187,6 +222,21 @@ ph_thumbview_new ()
 	return g_object_new (PH_TYPE_THUMBVIEW, NULL);
 }
 
+/**
+ * Loading images happens as follows: a directory that is retrieved from the settings is scanned by
+ * this method. If another directory is found and the recurse setting is true, then the recursive
+ * method is called. If the recurse setting is false, the directory is ignored. When an image is
+ * found, it is added together with its root directory (see below).
+ *
+ * The recursive method exists for two reasons:
+ * 1. As a fast track, we can now skip checking whether or not to recurse and if the arguments are
+ *    valid.
+ * 2. When thumbnails are added, the directory from which they were loaded is stored with them. In
+ *    case of recursion, this directory is the "root" from which recursion originated. This makes it
+ *    very easy to correctly remove thumbnails when a directory has been removed; the root directory
+ *    is compared with the removed directory and if it matches, the thumbnail is removed. This
+ *    circumvents quite a few nasty corner-cases we would otherwise have to deal with.
+ */
 void
 ph_thumbview_add_directory (PhThumbview *thumbview, gboolean recurse, const gchar *path)
 {
@@ -218,18 +268,57 @@ ph_thumbview_add_directory (PhThumbview *thumbview, gboolean recurse, const gcha
 
 		if (g_file_test (filepath, G_FILE_TEST_IS_DIR)) {
 			if (recurse) {
-				ph_thumbview_add_directory (thumbview, recurse, filepath);
+				ph_thumbview_add_directory_recursive (thumbview, filepath, path);
 			} else {
+				g_free (filepath);
 				continue;
 			}
 		} else if (ph_file_is_image (priv->supported_formats, filepath)) {
-			ph_thumbview_add_image (thumbview, filepath);
+			ph_thumbview_add_image (thumbview, filepath, path);
 		}
 
 		g_free (filepath);
 	}
 
 	g_dir_close (directory);
+}
+
+void
+ph_thumbview_remove_directory (PhThumbview *thumbview, const gchar *path)
+{
+	PhThumbviewPrivate *priv;
+	GtkTreeIter iter;
+	gchar *root;
+
+	g_return_if_fail (PH_IS_THUMBVIEW (thumbview));
+	g_return_if_fail (path != NULL);
+
+	priv = ph_thumbview_get_instance_private (thumbview);
+
+	if (!gtk_tree_model_get_iter_first (GTK_TREE_MODEL (priv->store), &iter)) {
+		g_printerr (_("The model is empty; no images to remove\n"));
+		return;
+	}
+
+	/* Naive way to go about it, but it appears to be fast enough and it is very simple.
+	 * Apparantly one extra iteration is done with an invalid iter in case the last row is an
+	 * image that has to be removed, but this does not seem to give any issues. */
+	for (;;) {
+		gtk_tree_model_get (GTK_TREE_MODEL (priv->store), &iter, COLUMN_ROOT, &root, -1);
+		if (g_strcmp0 (root, path) == 0) {
+			if (!gtk_list_store_remove (priv->store, &iter)) {
+				break;
+			}
+		} else {
+			if (!gtk_tree_model_iter_next (GTK_TREE_MODEL (priv->store), &iter)) {
+				break;
+			}
+		}
+		g_free (root);
+	}
+
+	/* Must free the root present when the loop was broken out of. */
+	g_free (root);
 }
 
 void

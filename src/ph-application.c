@@ -59,8 +59,9 @@ ph_application_action_preferences (UNUSED GSimpleAction *action,
 	GtkWindow *window;
 
 	window = gtk_application_get_active_window (application);
-	dialog = ph_preferences_dialog_new ();
+	g_return_if_fail (PH_IS_WINDOW (window));
 
+	dialog = ph_preferences_dialog_new ();
 	g_signal_connect (dialog, "destroy", G_CALLBACK (gtk_widget_destroyed), &dialog);
 	gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
 
@@ -130,10 +131,7 @@ ph_application_startup (GApplication *application)
 	priv = ph_application_get_instance_private (PH_APPLICATION (application));
 
 	priv->manager = ph_plugin_manager_get_default (PH_APPLICATION (application));
-
-	// TODO: update live when new directory is added
 	priv->settings = g_settings_new (SCHEMA);
-
 	g_set_application_name (_("Wallpaper browser"));
 
 	g_action_map_add_action_entries (G_ACTION_MAP (application),
@@ -147,22 +145,14 @@ static void
 ph_application_activate (GApplication *application)
 {
 	PhApplicationPrivate *priv;
-	PhWindow *window;
-	gchar **directories;
-	gboolean recurse;
 
 	priv = ph_application_get_instance_private (PH_APPLICATION (application));
 
 	if (!priv->restore_wallpaper) {
-		directories = g_settings_get_strv (priv->settings, KEY_DIRECTORIES);
-		recurse = g_settings_get_boolean (priv->settings, KEY_RECURSE);
-		window = ph_window_new (PH_APPLICATION (application), priv->manager);
-		ph_window_scan_directories (window, recurse, directories);
-		g_strfreev (directories);
-
+		PhWindow *window = ph_window_new (PH_APPLICATION (application), priv->manager);
 		gtk_window_present_with_time (GTK_WINDOW (window), GDK_CURRENT_TIME);
 	} else {
-		const gchar *filepath = g_settings_get_string (priv->settings, "wallpaper");
+		const gchar *filepath = g_settings_get_string (priv->settings, KEY_WALLPAPER);
 		if (strlen (filepath) == 0) {
 			g_printerr (_("No previous wallpaper set\n"));
 		} else {
@@ -257,14 +247,10 @@ ph_application_init (UNUSED PhApplication *application)
 PhApplication *
 ph_application_new (gboolean restore_wallpaper)
 {
-	GObject *application;
-
-	application = g_object_new (PH_TYPE_APPLICATION,
-				    "application-id", "org.unia.phosphorus",
-				    "flags", G_APPLICATION_FLAGS_NONE,
-				    "restore-wallpaper", restore_wallpaper,
-				    NULL);
-
-	return PH_APPLICATION (application);
+	return g_object_new (PH_TYPE_APPLICATION,
+			     "application-id", "org.unia.phosphorus",
+			     "flags", G_APPLICATION_FLAGS_NONE,
+			     "restore-wallpaper", restore_wallpaper,
+			     NULL);
 }
 

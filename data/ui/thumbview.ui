@@ -8,6 +8,8 @@
       <column type="GdkPixbuf"/>
       <!-- column-name paths -->
       <column type="gchararray"/>
+      <!-- column-name roots -->
+      <column type="gchararray"/>
       <!-- column-name names -->
       <column type="gchararray"/>
     </columns>
@@ -28,7 +30,7 @@
         <property name="columns">-1</property>
         <property name="pixbuf_column">0</property>
         <property name="text_column">-1</property>
-        <property name="tooltip_column">2</property>
+        <property name="tooltip_column">3</property>
         <property name="activate_on_single_click">True</property>
         <signal name="item-activated" handler="ph_thumbview_item_activated" object="PhThumbview" swapped="no"/>
         <signal name="selection-changed" handler="ph_thumbview_selection_changed" object="PhThumbview" swapped="no"/>

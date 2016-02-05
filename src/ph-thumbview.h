@@ -51,6 +51,9 @@ void         ph_thumbview_add_directory (PhThumbview *thumbview,
 					 gboolean     recurse,
 					 const gchar *path);
 
+void         ph_thumbview_remove_directory (PhThumbview *thumbview,
+					    const gchar *path);
+
 void         ph_thumbview_activate (PhThumbview *thumbview);
 
 G_END_DECLS

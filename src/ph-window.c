@@ -44,6 +44,11 @@ struct _PhWindowPrivate {
 
 	GtkWidget *headerbar;
 	PhThumbview *thumbview;
+
+	/* Needed to decide which directories have been removed
+	 * and which directories are new, in case the settings
+	 * change. */
+	gchar **currently_loaded;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PhWindow, ph_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -89,6 +94,51 @@ ph_window_thumbview_selection_changed (UNUSED PhThumbview *thumbview, gpointer u
 	if (G_UNLIKELY (!enabled)) {
 		g_simple_action_set_enabled (G_SIMPLE_ACTION (action), TRUE);
 	}
+}
+
+/**
+ * Naive but simple implementation that appears to be fast enough.
+ */
+static void
+ph_window_directories_changed (GSettings *settings, gchar *key, gpointer user_data)
+{
+	PhWindowPrivate *priv;
+	gchar **new;
+	guint n_new;
+	gboolean recurse;
+
+	priv = ph_window_get_instance_private (PH_WINDOW (user_data));
+
+	new = g_settings_get_strv (settings, key);
+	n_new = g_strv_length (new);
+	recurse = g_settings_get_boolean (priv->settings, KEY_RECURSE);
+
+	/* No previous directories; all new directories are added directories (startup). */
+	if (!priv->currently_loaded) {
+		for (guint i = 0; i < n_new; i++) {
+			ph_thumbview_add_directory (priv->thumbview, recurse, new[i]);
+		}
+	} else {
+		/* Previous directories have been loaded: change in settings. */
+		guint n_current = g_strv_length (priv->currently_loaded);
+		for (guint i = 0; i < n_current; i++) {
+			/* New directories does not contain a string that is in the currently loaded
+			 * directories, therefore it must be removed. */
+			if (!g_strv_contains ((const gchar * const *) new, priv->currently_loaded[i])) {
+				ph_thumbview_remove_directory (priv->thumbview, priv->currently_loaded[i]);
+			}
+		}
+		for (guint i = 0; i < n_new; i++) {
+			/* Currently loaded directories does not contain a string that is in the new
+			 * directories, therefore it must be added. */
+			if (!g_strv_contains ((const gchar * const *) priv->currently_loaded, new[i])) {
+				ph_thumbview_add_directory (priv->thumbview, recurse, new[i]);
+			}
+		}
+	}
+
+	g_strfreev (priv->currently_loaded);
+	priv->currently_loaded = new;
 }
 
 static void
@@ -141,6 +191,11 @@ ph_window_dispose (GObject *object)
 	g_clear_object (&priv->manager);
 	g_clear_object (&priv->settings);
 
+	if (priv->currently_loaded) {
+		g_strfreev (priv->currently_loaded);
+		priv->currently_loaded = NULL;
+	}
+
 	G_OBJECT_CLASS (ph_window_parent_class)->dispose (object);
 }
 
@@ -192,6 +247,10 @@ ph_window_init (PhWindow *window)
 	g_simple_action_set_enabled (G_SIMPLE_ACTION (action), FALSE);
 
 	priv->settings = g_settings_new (SCHEMA);
+	priv->currently_loaded = NULL;
+	g_signal_connect (priv->settings, "changed::"KEY_DIRECTORIES,
+			  G_CALLBACK (ph_window_directories_changed), window);
+	ph_window_directories_changed (priv->settings, KEY_DIRECTORIES, window);
 }
 
 PhWindow *
@@ -209,12 +268,12 @@ ph_window_new (PhApplication *application, PhPluginManager *manager)
 void
 ph_window_show_about_dialog (PhWindow *window)
 {
-	g_return_if_fail (PH_IS_WINDOW (window));
-
 	static const char *authors[] = {
 		"Jente Hidskes <hjdskes@gmail.com>",
 		NULL,
 	};
+
+	g_return_if_fail (PH_IS_WINDOW (window));
 
 	gtk_show_about_dialog (GTK_WINDOW (window),
 			       "program-name", g_get_application_name (),
@@ -237,20 +296,5 @@ ph_window_close (PhWindow *window)
 {
 	g_return_if_fail (PH_IS_WINDOW (window));
 	gtk_widget_destroy (GTK_WIDGET (window));
-}
-
-void
-ph_window_scan_directories (PhWindow *window, gboolean recurse, gchar * const *directories)
-{
-	PhWindowPrivate *priv;
-
-	g_return_if_fail (PH_IS_WINDOW (window));
-	g_return_if_fail (directories != NULL);
-
-	priv = ph_window_get_instance_private (window);
-
-	for (; *directories; directories++) {
-		ph_thumbview_add_directory (priv->thumbview, recurse, *directories);
-	}
 }
 
