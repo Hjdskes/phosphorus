@@ -43,7 +43,6 @@ enum {
 struct _PhApplicationPrivate {
 	gboolean restore_wallpaper;
 
-	GSettings *settings;
 	PhPluginManager *manager;
 };
 
@@ -131,7 +130,6 @@ ph_application_startup (GApplication *application)
 	priv = ph_application_get_instance_private (PH_APPLICATION (application));
 
 	priv->manager = ph_plugin_manager_get_default (PH_APPLICATION (application));
-	priv->settings = g_settings_new (SCHEMA);
 	g_set_application_name (_("Wallpaper browser"));
 
 	g_action_map_add_action_entries (G_ACTION_MAP (application),
@@ -152,12 +150,15 @@ ph_application_activate (GApplication *application)
 		PhWindow *window = ph_window_new (PH_APPLICATION (application), priv->manager);
 		gtk_window_present_with_time (GTK_WINDOW (window), GDK_CURRENT_TIME);
 	} else {
-		const gchar *filepath = g_settings_get_string (priv->settings, KEY_WALLPAPER);
+		GSettings *settings = g_settings_new (SCHEMA);
+		gchar *filepath = g_settings_get_string (settings, KEY_WALLPAPER);
 		if (strlen (filepath) == 0) {
 			g_printerr (_("No previous wallpaper set\n"));
 		} else {
 			ph_plugin_manager_proxy_plugins (priv->manager, filepath);
 		}
+		g_free (filepath);
+		g_object_unref (settings);
 	}
 }
 
@@ -201,7 +202,6 @@ ph_application_get_property (GObject    *object,
 	}
 }
 
-
 static void
 ph_application_dispose (GObject *object)
 {
@@ -209,7 +209,6 @@ ph_application_dispose (GObject *object)
 
 	priv = ph_application_get_instance_private (PH_APPLICATION (object));
 
-	g_clear_object (&priv->settings);
 	g_clear_object (&priv->manager);
 
 	G_OBJECT_CLASS (ph_application_parent_class)->dispose (object);
