@@ -62,6 +62,7 @@ libphosphorus_NOINST_H_FILES = \
 	ph-preferences-dialog.h \
 	ph-thumbview.h \
 	ph-window.h \
+	gsettings.h \
 	util.h
 
 libphosphorus_INST_H_FILES = \
