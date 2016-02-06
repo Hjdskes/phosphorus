@@ -51,6 +51,7 @@ libphosphorus_la_LDFLAGS = \
 libphosphorus_c_files = \
 	../data/phosphorus-resources.c \
 	ph-application.c \
+	ph-dir-store.c \
 	ph-plugin-manager.c \
 	ph-preferences-dialog.c \
 	ph-thumbview.c \
@@ -58,6 +59,7 @@ libphosphorus_c_files = \
 	util.c
 
 libphosphorus_NOINST_H_FILES = \
+	ph-dir-store.h \
 	ph-plugin-manager.h \
 	ph-preferences-dialog.h \
 	ph-thumbview.h \

@@ -25,6 +25,7 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 
+#include "ph-dir-store.h"
 #include "ph-plugin-manager.h"
 #include "ph-thumbview.h"
 #include "ph-window.h"
@@ -40,15 +41,11 @@ enum {
 
 struct _PhWindowPrivate {
 	PhPluginManager *manager;
+	PhDirStore *dir_store;
 	GSettings *settings;
 
 	GtkWidget *headerbar;
 	PhThumbview *thumbview;
-
-	/* Needed to decide which directories have been removed
-	 * and which directories are new, in case the settings
-	 * change. */
-	gchar **currently_loaded;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PhWindow, ph_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -96,49 +93,38 @@ ph_window_thumbview_selection_changed (UNUSED PhThumbview *thumbview, gpointer u
 	}
 }
 
-/**
- * Naive but simple implementation that appears to be fast enough.
- */
 static void
-ph_window_directories_changed (GSettings *settings, gchar *key, gpointer user_data)
+ph_window_directories_removed (UNUSED PhDirStore *dir_store,
+			       gchar            **directories,
+			       gpointer           user_data)
 {
 	PhWindowPrivate *priv;
-	gchar **new;
-	guint n_new;
+	guint n_directories;
+
+	priv = ph_window_get_instance_private (PH_WINDOW (user_data));
+
+	n_directories = g_strv_length (directories);
+	for (guint i = 0; i < n_directories; i++) {
+		ph_thumbview_remove_directory (priv->thumbview, directories[i]);
+	}
+}
+
+static void
+ph_window_directories_added (UNUSED PhDirStore *dir_store,
+			     gchar            **directories,
+			     gpointer           user_data)
+{
+	PhWindowPrivate *priv;
+	guint n_directories;
 	gboolean recurse;
 
 	priv = ph_window_get_instance_private (PH_WINDOW (user_data));
 
-	new = g_settings_get_strv (settings, key);
-	n_new = g_strv_length (new);
+	n_directories = g_strv_length (directories);
 	recurse = g_settings_get_boolean (priv->settings, KEY_RECURSE);
-
-	/* No previous directories; all new directories are added directories (startup). */
-	if (!priv->currently_loaded) {
-		for (guint i = 0; i < n_new; i++) {
-			ph_thumbview_add_directory (priv->thumbview, recurse, new[i]);
-		}
-	} else {
-		/* Previous directories have been loaded: change in settings. */
-		guint n_current = g_strv_length (priv->currently_loaded);
-		for (guint i = 0; i < n_current; i++) {
-			/* New directories does not contain a string that is in the currently loaded
-			 * directories, therefore it must be removed. */
-			if (!g_strv_contains ((const gchar * const *) new, priv->currently_loaded[i])) {
-				ph_thumbview_remove_directory (priv->thumbview, priv->currently_loaded[i]);
-			}
-		}
-		for (guint i = 0; i < n_new; i++) {
-			/* Currently loaded directories does not contain a string that is in the new
-			 * directories, therefore it must be added. */
-			if (!g_strv_contains ((const gchar * const *) priv->currently_loaded, new[i])) {
-				ph_thumbview_add_directory (priv->thumbview, recurse, new[i]);
-			}
-		}
+	for (guint i = 0; i < n_directories; i++) {
+		ph_thumbview_add_directory (priv->thumbview, recurse, directories[i]);
 	}
-
-	g_strfreev (priv->currently_loaded);
-	priv->currently_loaded = new;
 }
 
 static void
@@ -189,12 +175,8 @@ ph_window_dispose (GObject *object)
 	priv = ph_window_get_instance_private (PH_WINDOW (object));
 
 	g_clear_object (&priv->manager);
+	g_clear_object (&priv->dir_store);
 	g_clear_object (&priv->settings);
-
-	if (priv->currently_loaded) {
-		g_strfreev (priv->currently_loaded);
-		priv->currently_loaded = NULL;
-	}
 
 	G_OBJECT_CLASS (ph_window_parent_class)->dispose (object);
 }
@@ -247,10 +229,13 @@ ph_window_init (PhWindow *window)
 	g_simple_action_set_enabled (G_SIMPLE_ACTION (action), FALSE);
 
 	priv->settings = g_settings_new (SCHEMA);
-	priv->currently_loaded = NULL;
-	g_signal_connect (priv->settings, "changed::"KEY_DIRECTORIES,
-			  G_CALLBACK (ph_window_directories_changed), window);
-	ph_window_directories_changed (priv->settings, KEY_DIRECTORIES, window);
+
+	priv->dir_store = ph_dir_store_new ();
+	g_signal_connect (priv->dir_store, "directories-added",
+			  G_CALLBACK (ph_window_directories_added), window);
+	g_signal_connect (priv->dir_store, "directories-removed",
+			  G_CALLBACK (ph_window_directories_removed), window);
+	ph_dir_store_activate_added (priv->dir_store);
 }
 
 PhWindow *
