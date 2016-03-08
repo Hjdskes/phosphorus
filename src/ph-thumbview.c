@@ -47,9 +47,16 @@ enum {
 
 static guint signals[SIGNAL_LAST];
 
+typedef struct {
+	GtkListStore *store;
+	GtkTreeIter iter;
+} AsyncData;
+
 struct _PhThumbviewPrivate {
 	GtkIconView *iconview;
 	GtkListStore *store;
+
+	GdkPixbuf *placeholder;
 
 	/* GdkPixbuf's supported formats. */
 	GSList *supported_formats;
@@ -58,33 +65,78 @@ struct _PhThumbviewPrivate {
 G_DEFINE_TYPE_WITH_PRIVATE (PhThumbview, ph_thumbview, GTK_TYPE_SCROLLED_WINDOW)
 
 static void
+on_async_ready (UNUSED GObject *source_object, GAsyncResult *res, gpointer user_data)
+{
+	AsyncData *data = (AsyncData *) user_data;
+	GdkPixbuf *thumb = NULL;
+	GError *error = NULL;
+
+	thumb = gdk_pixbuf_new_from_stream_finish (res, &error);
+	if (!thumb) {
+		g_printerr (_("Could not create pixbuf from stream: %s\n"), error->message);
+		g_clear_error (&error);
+		g_free (data);
+		return;
+	}
+
+	gtk_list_store_set (data->store, &data->iter, COLUMN_THUMB, thumb, -1);
+	g_free (data);
+	g_object_unref (thumb);
+}
+
+static void
+on_read_ready (GObject *source_object, GAsyncResult *res, gpointer user_data)
+{
+	GFileInputStream *stream;
+	GError *error = NULL;
+
+	stream = g_file_read_finish (G_FILE (source_object), res, &error);
+	if (!stream) {
+		gchar *file = g_file_get_path (G_FILE (source_object));
+		g_printerr (_("Could not read file \"%s\": %s\n"), file, error->message);
+		g_free (file);
+		g_clear_error (&error);
+		return;
+	}
+
+	gdk_pixbuf_new_from_stream_at_scale_async (G_INPUT_STREAM (stream),
+						   THUMB_WIDTH,
+						   THUMB_HEIGHT,
+						   TRUE,
+						   NULL,
+						   on_async_ready,
+						   user_data);
+	g_object_unref (stream);
+}
+
+static void
 ph_thumbview_add_image (PhThumbview *thumbview, const gchar *file, const gchar *root)
 {
 	PhThumbviewPrivate *priv;
-	GdkPixbuf *thumb = NULL;
-	GError *error = NULL;
+	AsyncData *data;
 	GtkTreeIter iter;
 	gchar *basename;
 
 	priv = ph_thumbview_get_instance_private (thumbview);
 
-	thumb = gdk_pixbuf_new_from_file_at_size (file, THUMB_WIDTH, THUMB_HEIGHT, &error);
-	if (!thumb) {
-		g_printerr (_("Could not load image \"%s\": %s\n"), file, error->message);
-		g_clear_error (&error);
-		return;
-	}
-
+	/* Add the placeholder image with the correct values in the PATH, ROOT and NAME
+	 * columns while the image loads in the background. */
 	basename = g_path_get_basename (file);
 	gtk_list_store_append (priv->store, &iter);
 	gtk_list_store_set (priv->store, &iter,
-			    COLUMN_THUMB, thumb,
+			    COLUMN_THUMB, priv->placeholder,
 			    COLUMN_PATH, file,
 			    COLUMN_ROOT, root,
 			    COLUMN_NAME, basename,
 			    -1);
 	g_free (basename);
-	g_object_unref (thumb);
+
+	data = g_new (AsyncData, 1);
+	data->store = priv->store;
+	data->iter = iter;
+
+	/* Asynchronously load the pixbuf. */
+	g_file_read_async (g_file_new_for_path (file), G_PRIORITY_DEFAULT, FALSE, on_read_ready, data);
 }
 
 static void
@@ -153,6 +205,10 @@ ph_thumbview_dispose (GObject *object)
 
 	priv = ph_thumbview_get_instance_private (PH_THUMBVIEW (object));
 
+	if (priv->placeholder) {
+		g_clear_object (&priv->placeholder);
+	}
+
 	if (priv->supported_formats) {
 		g_slist_free (priv->supported_formats);
 		priv->supported_formats = NULL;
@@ -202,8 +258,30 @@ static void
 ph_thumbview_init (PhThumbview *thumbview)
 {
 	PhThumbviewPrivate *priv;
+	GtkIconTheme *icon_theme;
+	GdkPixbuf *placeholder;
+	GError *error = NULL;
 
 	priv = ph_thumbview_get_instance_private (thumbview);
+
+	/* Create a placeholder thumbnail image that is displayed while the real thumbnails are
+	 * loading. */
+	icon_theme = gtk_icon_theme_get_default ();
+	placeholder = gtk_icon_theme_load_icon (icon_theme, "image-loading", 64, GTK_ICON_LOOKUP_FORCE_SVG, &error);
+	if (!placeholder) {
+		g_printerr (_("Could not load placeholder image: %s\n"), error->message);
+		g_clear_error (&error);
+	} else {
+		/* From the GtkIconTheme documentation:
+		 * Note that you probably want to listen for icon theme changes and update the icon.
+		 * This is usually done by connecting to the GtkWidget::style-set signal. If for
+		 * some reason you do not want to update the icon when the icon theme changes, you
+		 * should consider using gdk_pixbuf_copy() to make a private copy of the pixbuf
+		 * returned by this function. Otherwise GTK+ may need to keep the old icon theme
+		 * loaded, which would be a waste of memory. */
+		priv->placeholder = gdk_pixbuf_copy (placeholder);
+		g_object_unref (placeholder);
+	}
 
 	/* Hold GdkPixbuf's supported formats in memory. This list will be traversed for every file
 	 * found inside a directory being scanned. It is therefore better to hold it in memory than
