@@ -65,10 +65,6 @@ on_directories_changed (GSettings *settings, gchar *key, gpointer user_data)
 	priv = ph_dir_store_get_instance_private (dir_store);
 
 	new_directories = g_settings_get_strv (settings, key);
-	if (!new_directories || !*new_directories) {
-		g_printerr (_("Could not retrieve the new directories\n"));
-		return;
-	}
 
 	/* There are no current directories; every new directory is an added one. */
 	if (!priv->current_directories || !*priv->current_directories) {
@@ -76,7 +72,7 @@ on_directories_changed (GSettings *settings, gchar *key, gpointer user_data)
 		goto end;
 	} else if (!new_directories || !*new_directories) {
 		/* There are no new directories, but there are current ones: all are removed. */
-		g_signal_emit (dir_store, signals[SIGNAL_DIRS_REMOVED], 0, new_directories);
+		g_signal_emit (dir_store, signals[SIGNAL_DIRS_REMOVED], 0, priv->current_directories);
 		goto end;
 	}
 
